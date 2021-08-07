@@ -3,7 +3,7 @@
  * @author 凉风有信、
  */
 
-const log4js = require('./log4j')
+const log4js = require('./log4')
 const CODE = {
     SUCCESS: 200,
     PARAM_ERROR: 10001, // 参数错误

@@ -7,9 +7,10 @@ const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
 const log4js = require('./utils/log4')
 
-const index = require('./routes/index')
 const users = require('./routes/users')
 
+
+require('./config/db')
 // error handler
 onerror(app)
 
@@ -32,7 +33,6 @@ app.use(async (ctx, next) => {
 })
 
 // routes
-app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
 
 // error-handling
