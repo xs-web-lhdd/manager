@@ -1,0 +1,28 @@
+[2021-08-07T14:40:22.574] [ERROR] error - ReferenceError: ctx is not defined
+    at C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\app.js:29:3
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at views (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-views\src\index.js:91:12)
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at serve (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-static\index.js:53:15)
+    at async bodyParser (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-bodyparser\index.js:95:5)
+[2021-08-07T14:40:22.705] [ERROR] error - ReferenceError: ctx is not defined
+    at C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\app.js:29:3
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at views (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-views\src\index.js:91:12)
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at serve (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-static\index.js:53:15)
+    at async bodyParser (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-bodyparser\index.js:95:5)
+[2021-08-07T14:40:22.822] [ERROR] error - ReferenceError: ctx is not defined
+    at C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\app.js:29:3
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at views (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-views\src\index.js:91:12)
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at serve (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-static\index.js:53:15)
+    at async bodyParser (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-bodyparser\index.js:95:5)
+[2021-08-07T14:41:22.114] [ERROR] error - ReferenceError: ctx is not defined
+    at C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\app.js:29:3
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at views (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-views\src\index.js:91:12)
+    at dispatch (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-compose\index.js:42:32)
+    at serve (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-static\index.js:53:15)
+    at async bodyParser (C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manger-serve\node_modules\koa-bodyparser\index.js:95:5)

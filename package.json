@@ -22,6 +22,7 @@
     "pug": "^2.0.3"
   },
   "devDependencies": {
+    "log4js": "^6.3.0",
     "nodemon": "^1.19.1"
   }
 }
