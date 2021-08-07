@@ -1,8 +1,6 @@
 // 使用createWebHashHistory的好处：在上线的时候不需要ngeix的配置
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from '../components/Home.vue'
-import Welcome from '../components/Welcome.vue'
-import Login from '../components/Login.vue'
 
 const routes = [
     {
@@ -18,19 +16,19 @@ const routes = [
                 name: 'welcome',
                 path: '/welcome',
                 meta: {
-                    title: '欢迎页'
+                    title: '欢迎'
                 },
-                component: Welcome
-            },
-            {
-                name: 'login',
-                path: '/login',
-                meta: {
-                    title: '注册页'
-                },
-                component: Login
+                component: () => import('../view/Welcome.vue')
             }
         ] 
+    },
+    {
+        name: 'Login',
+        path: '/login',
+        meta: {
+            title: '登录'
+        },
+        component:() => import('../view/Login.vue')
     }
 ]
 
