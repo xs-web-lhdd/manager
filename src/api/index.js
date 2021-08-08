@@ -9,8 +9,23 @@ export default {
     return request({
       url: '/users/login',
       method: 'post',
-      data: params,
-      mock: true
+      data: params
+      // mock: true
+    })
+  },
+  noticeCount(params) {
+    return request({
+      url: '/leave/count',
+      method: 'get',
+      data: {}
+      // mock: true
+    })
+  },
+  MenuList() {
+    return request({
+      url: '/menu/list',
+      method: 'get',
+      data: {}
     })
   }
 }
