@@ -16,9 +16,27 @@ const routes = [
                 name: 'welcome',
                 path: '/welcome',
                 meta: {
-                    title: '欢迎'
+                    title: '欢迎体验Vue3'
                 },
                 component: () => import('../view/Welcome.vue')
+            },
+            {
+                name: 'user',
+                path: 'user',
+                meta: {
+                    title: '用户管理'
+                },
+                component: () => import('../view/Welcome.vue'),
+                children: [
+                    {
+                        name: 'info',
+                        path: 'info',
+                        meta: {
+                            title: '信息统计'
+                        },
+                        component: () => import('../view/Welcome.vue')
+                    }
+                ]
             }
         ] 
     },
