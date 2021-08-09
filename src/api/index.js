@@ -17,15 +17,16 @@ export default {
     return request({
       url: '/leave/count',
       method: 'get',
-      data: {}
-      // mock: true
+      data: {},
+      mock: true
     })
   },
   MenuList() {
     return request({
       url: '/menu/list',
       method: 'get',
-      data: {}
+      data: {},
+      mock: true
     })
   }
 }

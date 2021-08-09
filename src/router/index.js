@@ -26,17 +26,7 @@ const routes = [
                 meta: {
                     title: '用户管理'
                 },
-                component: () => import('../view/Welcome.vue'),
-                children: [
-                    {
-                        name: 'info',
-                        path: 'info',
-                        meta: {
-                            title: '信息统计'
-                        },
-                        component: () => import('../view/Welcome.vue')
-                    }
-                ]
+                component: () => import('../view/User.vue')
             }
         ] 
     },

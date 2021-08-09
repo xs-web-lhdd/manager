@@ -16,4 +16,4 @@ app.config.globalProperties.$request = request
 app.config.globalProperties.$storage = storage
 app.config.globalProperties.$api = api
 
-app.use(Elementplus).use(store).use(router).mount('#app')
+app.use(Elementplus,{size:'small'}).use(store).use(router).mount('#app')
