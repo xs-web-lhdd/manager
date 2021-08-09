@@ -3,6 +3,7 @@
  * @author 凉风有信、
  */
 const router = require('koa-router')()
+const jwt = require('jsonwebtoken')
 const User = require('../models/userSchema')
 const utils = require('../utils/util')
 // 前缀
@@ -15,8 +16,13 @@ router.post('/login', async (ctx, next) => {
       userName,
       userPwd
     })
+    const data = res._doc
+    const token = jwt.sign({
+      data: data
+    }, 'imooc', { expiresIn: 60 })
     if (res) {
-      ctx.body = utils.success(res)
+      data.token = token
+      ctx.body = utils.success(data)
     } else {
       ctx.body = utils.fail('账号或密码不正确')
     }
