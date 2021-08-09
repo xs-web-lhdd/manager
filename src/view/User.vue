@@ -24,7 +24,7 @@
     </div>
     <div class="base-table">
       <div class="action">
-        <el-button type="primary">新增</el-button>
+        <el-button type="primary" @click="handleCreate">新增</el-button>
         <el-button type="danger" @click="handlePatchDel">批量删除</el-button>
       </div>
       <el-table
@@ -61,6 +61,54 @@
       >
       </el-pagination>
     </div>
+
+
+    <el-dialog title="用户新增" v-model="showModal">
+      <el-form ref="dialogForm" :model="userForm" :rules="rules" label-width="100px">
+        <el-form-item label="用户名" prop="userName">
+          <el-input v-model="userForm.userName" placeholder="请输入用户名称"/>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="userEmail">
+          <el-input v-model="userForm.userEmail" placeholder="请输入用户邮箱">
+            <template #append>@liang.com</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="userForm.mobile" placeholder="请输入手机号"/>
+        </el-form-item>
+        <el-form-item label="岗位" prop="job">
+          <el-input v-model="userForm.job" placeholder="请输入岗位"/>
+        </el-form-item>
+        <el-form-item label="状态" prop="state">
+          <el-select v-model="userForm.state">
+            <el-option :value="1" label="在职"></el-option>
+            <el-option :value="2" label="离职"></el-option>
+            <el-option :value="3" label="试用期"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="系统角色" prop="roleList">
+          <el-select v-model="userForm.roleList" placeholder="请选择用户系统角色">
+            <el-option></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属部门" prop="deptId">
+          <el-cascader
+            v-model="userForm.deptId"
+            placeholder="请选择所属部门"
+            :options="[]"
+            :props="{ checkStrictly: true, value: '_id', label: 'deptName' }"
+            clearable
+          >
+          </el-cascader>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button>取 消</el-button>
+          <el-button type="primary">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -170,10 +218,28 @@ export default {
       checkedUserIds.value = arr
     }
 
+    // 用户新增
+    const userForm = reactive({
+      state: 3
+    })
+    const showModal = ref(false)
+    // 定义表单校验规则
+    const rules = reactive({
+      userName: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
+      userEmail: [{ required: true, message: '请输入用户邮箱', trigger: 'blur' }],
+      mobile: [
+        { message: '请输入手机号', trigger: 'blur' },
+        { pattern: /1\d{10}/, message: '请输入正确手机号格式', trigger: 'blur' }
+      ]
+    })
+    const handleCreate = () => {
+      console.log(1);
+      showModal.value = true
+    }
     return { user, userList, pager , checkedUserIds,
-    columns, getUserList, handleQuery, handleReset,
+    columns, userForm, showModal, rules, getUserList, handleQuery, handleReset,
     handleCurrentChange, handleDel, handlePatchDel,
-    handleSelectionChange }
+    handleSelectionChange, handleCreate }
   }
 }
 </script>
