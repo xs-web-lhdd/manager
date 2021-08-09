@@ -71,7 +71,6 @@ export default {
   mounted() {
     this.getNoticeCount()
     this.getMenuList()
-    console.log(this.activeMenu);
   },
   methods: {
     handleLogout(key) {

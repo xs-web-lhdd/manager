@@ -47,6 +47,7 @@ export default {
     login() {
       this.$refs.userForm.validate((valid) => {
         if (valid) {
+          console.log(this.$api);
           this.$api.login(this.user).then((res) => {
             this.$store.commit('saveUserInfo', res)
             this.$router.push('/Welcome')

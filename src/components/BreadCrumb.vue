@@ -14,9 +14,6 @@ export default {
     breadList() {
       return this.$route.matched
     }
-  },
-  mounted() {
-    console.log(this.$route);
   }
 }
 </script>
