@@ -6,8 +6,10 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
 const log4js = require('./utils/log4')
+const koajwt = require('koa-jwt')
 
 const users = require('./routes/users')
+const util = require('./utils/util')
 
 
 require('./config/db')
@@ -28,9 +30,21 @@ app.use(views(__dirname + '/views', {
 
 // logger
 app.use(async (ctx, next) => {
-  await next()
   log4js.info('log output')
+  await next().catch((err) => {
+    if (err.status == '401') {
+      ctx.status = 200;
+      ctx.body = util.fail('Token认证失败', util.CODE.AUTH_ERROR)
+    } else {
+      throw err;
+    }
+  })
 })
+
+// 用unless指定不认证token的路由
+app.use(koajwt({ secret: 'imooc' }).unless({
+  path: [/^\/api\/users\/login/]
+}))
 
 // routes
 app.use(users.routes(), users.allowedMethods())

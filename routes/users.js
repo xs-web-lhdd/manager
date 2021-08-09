@@ -12,14 +12,20 @@ router.prefix('/api/users')
 router.post('/login', async (ctx, next) => {
   try {
     const { userName, userPwd } = ctx.request.body
+    // 返回数据库指定字段有三种方式
+    // 1、通过字符串空格的方式 ： 'userId userName userEmail state role deptId roleList'
+    // 2、通过JSON的方式 1代表返回，0代表不返回：  { userId:1, userName:0 }
+    // 3、通过select('userId')：打点调用select('userId')
     const res = await User.findOne({
       userName,
       userPwd
-    })
+    }, 'userId userName userEmail state role deptId roleList')
+
     const data = res._doc
     const token = jwt.sign({
       data: data
-    }, 'imooc', { expiresIn: 60 })
+    }, 'imooc', { expiresIn: '1h' })
+
     if (res) {
       data.token = token
       ctx.body = utils.success(data)
