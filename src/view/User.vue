@@ -167,7 +167,7 @@ export default {
   setup () {
     const { ctx, proxy } = getCurrentInstance()
     const user = reactive({
-      state: 0,
+      state: 1,
       userId: '',
       userName: ''
     })
@@ -249,7 +249,6 @@ export default {
       userName: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
       userEmail: [{ required: true, message: '请输入用户邮箱', trigger: 'blur' }],
       mobile: [
-        { message: '请输入手机号', trigger: 'blur' },
         { pattern: /1\d{10}/, message: '请输入正确手机号格式', trigger: 'blur' }
       ],
       deptId: [{ required: true, message: '请选择所属部门', trigger: 'blur' }]
@@ -287,7 +286,11 @@ export default {
           let res = await proxy.$api.userSubmit(params)
           if (res) {
             showModal.value = false
-            proxy.$message.success('用户创建成功')
+            if (active.value === 'edit') {
+              proxy.$message.success('用户编辑成功')
+            } else {
+              proxy.$message.success('用户创建成功')
+            }
             handleReset('dialogForm')
             getUserList()
           }
