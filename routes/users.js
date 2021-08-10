@@ -79,4 +79,31 @@ router.post('/delete', async (ctx, next) => {
 })
 
 
+// 用户新增/编辑：
+router.post('/operate', async (ctx, next) => {
+  const { userId, userName, userEmail, mobile, job, state, roleList, deptId, active  } = ctx.request.body
+  if (active === 'add') {
+    if (userName || userEmail || deptId) {
+      ctx.body = utils.fail('参数错误', utils.CODE.PARAM_ERROR)
+      return
+    }
+  } else {
+    if (!deptId) {
+      ctx.body = utils.fail('部门不能为空', utils.CODE.PARAM_ERROR)
+      return
+    }
+    try {
+      const res = await User.findOneAndUpdate({userId}, {mobile, job, state, roleList, deptId})
+      if (res) {
+        ctx.body = utils.success('更新成功')
+        return
+      }      
+    } catch (error) {
+      ctx.body = utils.fail('更新失败', error.stack) 
+    }
+  }
+
+})
+
+
 module.exports = router
