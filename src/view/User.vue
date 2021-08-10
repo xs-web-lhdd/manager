@@ -241,7 +241,7 @@ export default {
 
     // 用户新增
     const userForm = reactive({
-      state: 3
+      state: 1
     })
     const showModal = ref(false)
     // 定义表单校验规则

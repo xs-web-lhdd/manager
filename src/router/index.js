@@ -13,7 +13,7 @@ const routes = [
         redirect:'/Welcome',
         children: [
             {
-                name: 'welcome',
+                name: 'Welcome',
                 path: '/welcome',
                 meta: {
                     title: '欢迎体验Vue3'
@@ -21,12 +21,20 @@ const routes = [
                 component: () => import('../view/Welcome.vue')
             },
             {
-                name: 'user',
-                path: 'user',
+                name: 'User',
+                path: '/system/user',
                 meta: {
                     title: '用户管理'
                 },
                 component: () => import('../view/User.vue')
+            },
+            {
+                name: 'Menu',
+                path: '/system/menu',
+                meta: {
+                    title: '菜单管理'
+                },
+                component: () => import('../view/Menu.vue')
             }
         ] 
     },
