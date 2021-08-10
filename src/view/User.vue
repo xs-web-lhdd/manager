@@ -121,6 +121,7 @@
 
 <script>
 import { getCurrentInstance, onMounted, reactive, ref, toRaw } from 'vue'
+import utils from './../untils/utils'
 // 表单格式
 const columns = reactive([
   { label: '用户ID', prop: 'userId' },
@@ -147,8 +148,18 @@ const columns = reactive([
       }[value]
     }
   },
-  { label: '注册时间', prop: 'createTime' },
-  { label: '登录时间', prop: 'lastLoginTime' }
+  { 
+    label: '注册时间', prop: 'createTime', width: 180,
+    formatter(row, column, value) {
+      return utils.formateDate(new Date(value))
+    }
+  },
+  { 
+    label: '登录时间', prop: 'lastLoginTime', width: 180,
+    formatter(row, column, value) {
+      return utils.formateDate(new Date(value))
+    }
+  }
 ])
 
 export default {
