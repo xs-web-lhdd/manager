@@ -38,5 +38,32 @@ router.post('/login', async (ctx, next) => {
 })
 
 
+// 用户列表：
+router.get('/list', async (ctx, next) => {
+  // get是query传参 --- 细节！！！
+  const { userId, userName, state } = ctx.request.query
+  const { page, skipIndex } = utils.pager(ctx.request.query)
+  let params = {}
+  if (userId) params.userId = userId
+  if (userName) params.userName = userName
+  if (state && state != '0') params.state = state
+  try {
+    // 根据params进行查询：过滤掉密码
+    const query = User.find(params, {_id: 0, userPwd: 0})
+    const list = await query.skip(skipIndex).limit(page.pageSize)
+    const total = await User.countDocuments(params)
+  
+    ctx.body = utils.success({
+      page: {
+        ...page,
+        total
+      },
+      list
+    })  
+  } catch (error) {
+    ctx.body = utils.fail(`数据库查询异常：${error.stack}`)
+  }
+})
+
 
 module.exports = router
