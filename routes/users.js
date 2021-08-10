@@ -21,12 +21,11 @@ router.post('/login', async (ctx, next) => {
       userPwd
     }, 'userId userName userEmail state role deptId roleList')
 
-    const data = res._doc
-    const token = jwt.sign({
-      data: data
-    }, 'imooc', { expiresIn: '1h' })
-
     if (res) {
+      const data = res._doc
+      const token = jwt.sign({
+        data: data
+      }, 'imooc', { expiresIn: '1h' })
       data.token = token
       ctx.body = utils.success(data)
     } else {
