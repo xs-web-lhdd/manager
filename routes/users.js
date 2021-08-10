@@ -5,7 +5,9 @@
 const router = require('koa-router')()
 const jwt = require('jsonwebtoken')
 const User = require('../models/userSchema')
+const Counter = require('../models/counterSchema')
 const utils = require('../utils/util')
+const md5 = require('md5')
 // 前缀
 router.prefix('/api/users')
 
@@ -32,7 +34,6 @@ router.post('/login', async (ctx, next) => {
       ctx.body = utils.fail('账号或密码不正确')
     }
   } catch (error) {
-    console.log(error.msg)
     ctx.body = utils.fail(error.msg)
   }
 })
@@ -83,9 +84,27 @@ router.post('/delete', async (ctx, next) => {
 router.post('/operate', async (ctx, next) => {
   const { userId, userName, userEmail, mobile, job, state, roleList, deptId, active  } = ctx.request.body
   if (active === 'add') {
-    if (userName || userEmail || deptId) {
+    if (!userName || !userEmail || !deptId) {
       ctx.body = utils.fail('参数错误', utils.CODE.PARAM_ERROR)
       return
+    }
+    const res = await User.findOne({ $or: [ { userName }, { userEmail } ] }, '_id userName userEmail')
+    if (res) {
+      ctx.body = utils.fail(`系统检测到有重复的用户，信息如下：${res.userName}---${res.userEmail}`)
+      return
+    }
+    const doc = await Counter.findOneAndUpdate({ _id: 'userId' }, { $inc: { sequence_value: 1 } }, { new: true })
+    try {
+      const user = new User({
+        userId: doc.sequence_value,
+        userPwd: md5('123456'),
+        userName, userEmail, role: 1, // 默认普通用户
+        roleList, job, state, deptId, mobile
+      })
+      user.save()
+      ctx.body = utils.success({}, '创建成功')      
+    } catch (error) {
+      ctx.body = utils.fail(error.stack ,'用户创建失败')
     }
   } else {
     if (!deptId) {
