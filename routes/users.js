@@ -66,4 +66,17 @@ router.get('/list', async (ctx, next) => {
 })
 
 
+// 删除用户
+router.post('/delete', async (ctx, next) => {
+  // 待删除的用户Id
+  const { userId } = ctx.request.body
+  const res = await User.updateMany({ userId: { $in: userId } }, { state: 2 })
+  if (res.nModified > 0) {
+    ctx.body = utils.success(res, `共删除成功${res.nModified}条数据`)
+    return
+  }
+  ctx.body = utils.fail('删除失败')
+})
+
+
 module.exports = router
