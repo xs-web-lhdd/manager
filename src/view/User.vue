@@ -63,7 +63,7 @@
     </div>
 
 
-    <el-dialog title="用户新增" v-model="showModal">
+    <el-dialog title="用户新增" v-model="showModal" @close="handleClose" >
       <el-form ref="dialogForm" :model="userForm" :rules="rules" label-width="100px">
         <el-form-item label="用户名" prop="userName">
           <el-input v-model="userForm.userName" :disabled="active === 'edit'" placeholder="请输入用户名称"/>
@@ -263,6 +263,7 @@ export default {
     // 新增用户弹窗确定and取消：
     const handleClose = () => {
       showModal.value = false
+      active.value = 'add'
       handleReset('dialogForm')
     }
     const active = ref('add')
