@@ -46,7 +46,7 @@
           label="操作"
           width="150">
           <template #default="scope">
-            <el-button @click="handleClick(scope.row)" size="mini">编辑</el-button>
+            <el-button @click="handleEdit(scope.row)" size="mini">编辑</el-button>
             <el-button type="danger" size="mini" @click="() => handleDel(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -66,10 +66,10 @@
     <el-dialog title="用户新增" v-model="showModal">
       <el-form ref="dialogForm" :model="userForm" :rules="rules" label-width="100px">
         <el-form-item label="用户名" prop="userName">
-          <el-input v-model="userForm.userName" placeholder="请输入用户名称"/>
+          <el-input v-model="userForm.userName" :disabled="active === 'edit'" placeholder="请输入用户名称"/>
         </el-form-item>
         <el-form-item label="邮箱" prop="userEmail">
-          <el-input v-model="userForm.userEmail" placeholder="请输入用户邮箱">
+          <el-input v-model="userForm.userEmail" :disabled="active === 'edit'" placeholder="请输入用户邮箱">
             <template #append>@liang.com</template>
           </el-input>
         </el-form-item>
@@ -245,6 +245,7 @@ export default {
     })
     const handleCreate = () => {
       showModal.value = true
+      active.active = 'add'
     }
     // 部门列表
     const deptList = ref([])
@@ -281,10 +282,19 @@ export default {
         }
       })
     }
+    // 用户编辑
+    const handleEdit = (row) => {
+      active.value = 'edit'
+      showModal.value = true
+      proxy.$nextTick(() => {
+        Object.assign(userForm, row)
+      })
+    }
     return { user, userList, pager , checkedUserIds,
-    columns, userForm, showModal, rules, deptList, roleList, getUserList, handleQuery, handleReset,
+    columns, userForm, showModal, rules, deptList, roleList, active, getUserList, handleQuery, handleReset,
     handleCurrentChange, handleDel, handlePatchDel,
-    handleSelectionChange, handleCreate, getRoleList, getDeptList, handleClose, handleSubmit }
+    handleSelectionChange, handleCreate, getRoleList, getDeptList,
+    handleClose, handleSubmit, handleEdit }
   }
 }
 </script>
