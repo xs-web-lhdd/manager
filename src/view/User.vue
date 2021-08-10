@@ -18,7 +18,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleQuery">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="() => handleReset('ruleForm')">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -87,25 +87,32 @@
           </el-select>
         </el-form-item>
         <el-form-item label="系统角色" prop="roleList">
-          <el-select v-model="userForm.roleList" placeholder="请选择用户系统角色">
-            <el-option></el-option>
+          <el-select clearable v-model="userForm.roleList" placeholder="请选择用户系统角色" multiple style="width: 100%">
+            <el-option
+              v-for="role in roleList"
+              :key="role._id"
+              :label="role.roleName"
+              :value="role._id"
+            >
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="所属部门" prop="deptId">
           <el-cascader
             v-model="userForm.deptId"
             placeholder="请选择所属部门"
-            :options="[]"
+            :options="deptList"
             :props="{ checkStrictly: true, value: '_id', label: 'deptName' }"
             clearable
+            style="width: 100%"
           >
           </el-cascader>
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button>取 消</el-button>
-          <el-button type="primary">确 定</el-button>
+          <el-button @click="handleClose">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </span>
       </template>
     </el-dialog>
@@ -113,7 +120,7 @@
 </template>
 
 <script>
-import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { getCurrentInstance, onMounted, reactive, ref, toRaw } from 'vue'
 // 表单格式
 const columns = reactive([
   { label: '用户ID', prop: 'userId' },
@@ -143,6 +150,7 @@ const columns = reactive([
   { label: '注册时间', prop: 'createTime' },
   { label: '登录时间', prop: 'lastLoginTime' }
 ])
+
 export default {
   name: 'User',
   setup () {
@@ -161,6 +169,8 @@ export default {
     })
     onMounted(() => {
       getUserList()
+      getDeptList()
+      getRoleList()
     })
     // 获取用户列表
     const getUserList = async () => {
@@ -177,8 +187,8 @@ export default {
       getUserList()
     }
     // 重置查询表单，获取用户列表
-    const handleReset = () => {
-      ctx.$refs.ruleForm.resetFields()
+    const handleReset = (form) => {
+      ctx.$refs[form].resetFields()
     }
     // 分页事件处理：
     const handleCurrentChange = (current) => {
@@ -230,16 +240,51 @@ export default {
       mobile: [
         { message: '请输入手机号', trigger: 'blur' },
         { pattern: /1\d{10}/, message: '请输入正确手机号格式', trigger: 'blur' }
-      ]
+      ],
+      deptId: [{ required: true, message: '请选择所属部门', trigger: 'blur' }]
     })
     const handleCreate = () => {
-      console.log(1);
       showModal.value = true
     }
+    // 部门列表
+    const deptList = ref([])
+    const getDeptList = async () => {
+      let list = await proxy.$api.getDeptList()
+      deptList.value = list
+    } 
+    // 获取角色列表
+    const roleList = ref([])
+    const getRoleList = async () => {
+      let list = await proxy.$api.getRoleList()
+      roleList.value = list
+    }
+
+    // 新增用户弹窗确定and取消：
+    const handleClose = () => {
+      showModal.value = false
+      handleReset('dialogForm')
+    }
+    const active = ref('add')
+    const handleSubmit = () => {
+      ctx.$refs.dialogForm.validate(async (valid) => {
+        if (valid) {
+          let params = toRaw(userForm)
+          params.userEmail += '@liang.com'
+          params.active = active.value
+          let res = await proxy.$api.userSubmit(params)
+          if (res) {
+            showModal.value = false
+            proxy.$message.success('用户创建成功')
+            handleReset('dialogForm')
+            getUserList()
+          }
+        }
+      })
+    }
     return { user, userList, pager , checkedUserIds,
-    columns, userForm, showModal, rules, getUserList, handleQuery, handleReset,
+    columns, userForm, showModal, rules, deptList, roleList, getUserList, handleQuery, handleReset,
     handleCurrentChange, handleDel, handlePatchDel,
-    handleSelectionChange, handleCreate }
+    handleSelectionChange, handleCreate, getRoleList, getDeptList, handleClose, handleSubmit }
   }
 }
 </script>
