@@ -40,9 +40,9 @@
           label="操作"
           width="220">
           <template #default="scope">
-            <el-button @click="handleAdd(2, scope.row)" size="mini">新增</el-button>
+            <el-button @click="handleAdd(2, scope.row)" type="primary" size="mini">新增</el-button>
             <el-button @click="handleEdit(scope.row)" size="mini">编辑</el-button>
-            <el-button type="danger" size="mini" @click="() => handleDel(scope.row)">删除</el-button>
+            <el-button type="danger" size="mini" @click="() => handleDel(scope.row._id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -59,7 +59,7 @@
             clearable
             placeholder="请选择父级菜单"
           />
-          <span>不选，则直接创建一级菜单</span>
+          <span style="margin-left: 20px">不选，则直接创建一级菜单</span>
         </el-form-item>
         <el-form-item label="菜单类型" prop="menuType">
           <el-radio-group v-model="menuForm.menuType">
@@ -174,6 +174,23 @@ export default {
         menuForm.parentId = [...row.parentId, row._id].filter(item => item)
       }
     }
+    // 编辑
+    const handleEdit = (row) => {
+      showModal.value = true
+      action.value = 'edit'
+      // 通过nextTick以及浅拷贝实现重置编辑
+      proxy.$nextTick(() => {
+        // 浅拷贝 --- yyds
+        Object.assign(menuForm, row)
+      })
+    }
+    // 删除
+    const handleDel = async (_id) => {
+      action.value = 'delete'
+      await proxy.$api.menuSubmit({_id, action})
+      proxy.$message.success('删除成功')
+      getMenuList()
+    }
     // 提交
     const handleSubmit = () => {
       proxy.$refs.dialogForm.validate(async (valid) => {
@@ -183,7 +200,7 @@ export default {
           let params = { ...menuForm, active } 
           const res = await proxy.$api.menuSubmit(params)
           showModal.value = false
-          proxy.$message.success('创建成功')
+          proxy.$message.success('操作成功')
           handleReset('dialogForm')
           getMenuList()
         }
@@ -208,7 +225,8 @@ export default {
       }
     }
     return { queryForm, menuList, columns, showModal, menuForm, rules,
-    handleQuery, handleReset, handleAdd, handleSubmit, handleClose
+    handleQuery, handleReset, handleAdd, handleSubmit, handleClose,
+    handleEdit, handleDel
     }
   }
 }
