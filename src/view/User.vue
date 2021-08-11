@@ -39,12 +39,15 @@
           :label="item.label"
           :width="item.width"
           :formatter="item.formatter"
+          align="center"
         >
         </el-table-column>
         <el-table-column
           fixed="right"
           label="操作"
-          width="150">
+          width="150"
+          align="center"
+        >
           <template #default="scope">
             <el-button @click="handleEdit(scope.row)" size="mini">编辑</el-button>
             <el-button type="danger" size="mini" @click="() => handleDel(scope.row)">删除</el-button>
