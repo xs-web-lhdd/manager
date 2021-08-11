@@ -9,6 +9,7 @@ const log4js = require('./utils/log4')
 const koajwt = require('koa-jwt')
 
 const users = require('./routes/users')
+const menus = require('./routes/menus')
 const util = require('./utils/util')
 
 
@@ -48,6 +49,7 @@ app.use(koajwt({ secret: 'imooc' }).unless({
 
 // routes
 app.use(users.routes(), users.allowedMethods())
+app.use(menus.routes(), menus.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {

@@ -3,6 +3,7 @@
  */
 
 const mongoose = require('mongoose')
+mongoose.set('useFindAndModify', false)
 const config = require('./index')
 
 mongoose.connect(config.URL, {
