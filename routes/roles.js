@@ -41,6 +41,29 @@ router.get('/list', async (ctx, next) => {
   }
 })
 
+// 角色操作：创建、编辑、删除
+router.post('/operate', async (ctx, next) => {
+  const { _id, action, roleName, remark } = ctx.request.body
+  let res, info
+  try {
+    if (action === 'create') {
+      res = await Role.create({ roleName, remark })
+      info = '创建成功'
+    } else if (action === 'edit') {
+      let params = { roleName, remark }
+      params.updateTime = new Date()
+      res = await Role.findByIdAndUpdate(_id, params)
+      info = '编辑成功'
+    } else {
+      res = await Role.findByIdAndDelete(_id)
+      info = '删除成功'
+    }
+    ctx.body = util.success(res, info)
+  } catch (error) {
+    ctx.body = util.fail(`操作失败，${error.stack}`)
+  }
+})
+
 
 
 module.exports = router
