@@ -14,7 +14,7 @@
 
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleAdd(1)">创建</el-button>
+        <el-button type="primary" @click="handleCreate">创建</el-button>
       </div>
       <el-table
         :data="roleList"
@@ -36,7 +36,7 @@
           align="center"
         >
           <template #default="scope">
-            <el-button size="mini">编辑</el-button>
+            <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button size="mini">设置权限</el-button>
             <el-button type="danger" size="mini" @click="() => handleDel(scope.row._id)">删除</el-button>
           </template>
@@ -54,47 +54,15 @@
       </el-pagination>
     </div>
 
-<!-- 
-    <el-dialog title="菜单新增" v-model="showModal" @close="handleClose">
-      <el-form ref="dialogForm" :model="menuForm" :rules="rules" label-width="100px">
-        <el-form-item label="父级菜单" prop="parentId">
-          <el-cascader
-            v-model="menuForm.parentId"
-            :options="menuList"
-            :props="{ checkStrictly: true, value: '_id', label: 'menuName' }"
-            clearable
-            placeholder="请选择父级菜单"
-          />
-          <span style="margin-left: 20px">不选，则直接创建一级菜单</span>
-        </el-form-item>
-        <el-form-item label="菜单类型" prop="menuType">
-          <el-radio-group v-model="menuForm.menuType">
-            <el-radio :label="1">菜单</el-radio>
-            <el-radio :label="2">按钮</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="菜单名称" prop="menuName">
-          <el-input v-model="menuForm.menuName" placeholder="请菜单名称"/>
-        </el-form-item>
-        <el-form-item label="菜单图标" prop="icon" v-show="menuForm.menuType === 1">
-          <el-input v-model="menuForm.icon" placeholder="请输入菜单图标"/>
-        </el-form-item>
-        <el-form-item label="路由地址" prop="path" v-show="menuForm.menuType === 1">
-          <el-input v-model="menuForm.path" placeholder="请输入路由地址"/>
-        </el-form-item>
-        <el-form-item label="权限标识" prop="menuCode" v-show="menuForm.menuType === 2">
-          <el-input v-model="menuForm.menuCode" placeholder="请输入权限标识"/>
-        </el-form-item>
-        <el-form-item label="组件路径" prop="component" v-show="menuForm.menuType === 1">
-          <el-input v-model="menuForm.component" placeholder="请输入组件路径"/>
-        </el-form-item>
-        <el-form-item label="菜单状态" prop="menuState" v-show="menuForm.menuType === 1">
-          <el-radio-group v-model="menuForm.menuState">
-            <el-radio :label="1">正常</el-radio>
-            <el-radio :label="2">停用</el-radio>
-          </el-radio-group>
-        </el-form-item>
 
+    <el-dialog title="菜单新增" v-model="showModal" @close="handleClose">
+      <el-form ref="dialogForm" :model="roleForm" :rules="rules" label-width="100px">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="roleForm.roleName" placeholder="请输入角色名称" />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input type="textarea" :rows="2" v-model="roleForm.remark" placeholder="请输入备注" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -102,7 +70,7 @@
           <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </span>
       </template>
-    </el-dialog> -->
+    </el-dialog>
 
 
   </div>
@@ -131,6 +99,13 @@ const pager = reactive({
   total: 100,
   pageSize: 1
 })
+const roleForm = reactive({})
+const rules = reactive({
+  roleName: [
+    { required: true, message: '请输入角色名称', trigger: 'blur' },
+    { min: 2, max: 10, message: '长度在2-8个字符', trigger: 'blur' }
+  ]
+})
 export default {
   name: 'Menu',
   setup () {
@@ -139,12 +114,70 @@ export default {
     })
     // 实例化上下文对象
     const { ctx, proxy } = getCurrentInstance()
+    // 获取请求接口
     const getRoleAllList = async () => {
-      const { list, page }  = await proxy.$api.getRoleAllList()
+      const { list, page }  = await proxy.$api.getRoleAllList(queryForm)
       roleList.value = list
       pager.total = page.total
     }
-    return { columns, queryForm, roleList, pager }
+    // 查询
+    const handleQuery = () => {
+      getRoleAllList()
+    }
+    const action = ref('')
+    // 创建
+    const handleCreate = () => {
+      showModal.value = true
+      action.value = 'create'
+    }
+    // 编辑
+    const handleEdit = (row) => {
+      showModal.value = true
+      action.value = 'edit'
+      proxy.$nextTick(() => {
+        Object.assign(roleForm, row)
+      })
+    }
+    // 删除
+    const handleDel = async (id) => {
+      action.value = 'delete'
+      let params = { id, action }
+      const res = await proxy.$api.rolesOperate(params)
+      if (res) {
+        proxy.$message.success('删除成功')
+      }
+    }
+    // 重置
+    const handleReset = (form) => {
+      ctx.$refs[form].resetFields()
+    }
+    // 取消弹框
+    const handleClose = () => {
+      showModal.value = false
+      handleReset('dialogForm')
+    }
+    // 确定提交
+    const showModal = ref(false)
+    const handleSubmit = () => {
+      proxy.$refs.dialogForm.validate(async (valid) => {
+        if (valid) {
+          showModal.value = false
+          let params = { ...roleForm, action }
+          const res = await proxy.$api.rolesOperate(params)
+          if (res) {
+            handleReset('dialogForm')
+            proxy.$message.success('提交成功')
+          }
+        }
+      })
+    }
+    // 分页
+    const handleCurrentChange = () => {}
+
+    return { columns, queryForm, roleList, pager, roleForm, rules, showModal,
+    handleQuery, handleSubmit, handleReset, handleClose, handleCreate,
+    handleCurrentChange, handleEdit, handleDel
+    }
   }
 }
 </script>
