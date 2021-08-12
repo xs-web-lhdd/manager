@@ -37,7 +37,7 @@
         >
           <template #default="scope">
             <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini">设置权限</el-button>
+            <el-button size="mini" type="primary" @click="handleOpenPermission(scope.row)">设置权限</el-button>
             <el-button type="danger" size="mini" @click="() => handleDel(scope.row._id)">删除</el-button>
           </template>
         </el-table-column>
@@ -54,8 +54,8 @@
       </el-pagination>
     </div>
 
-
-    <el-dialog title="菜单新增" v-model="showModal" @close="handleClose">
+<!-- 角色新增 -->
+    <el-dialog title="角色新增" v-model="showModal" @close="handleClose">
       <el-form ref="dialogForm" :model="roleForm" :rules="rules" label-width="100px">
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="roleForm.roleName" placeholder="请输入角色名称" />
@@ -72,6 +72,31 @@
       </template>
     </el-dialog>
 
+<!-- 权限弹框 -->
+    <el-dialog title="弹框权限" v-model="showPermission" @close="showPermission=false">
+      <el-form label-width="100px">
+        <el-form-item label="角色名称">
+          {{curRoleName}}
+        </el-form-item>
+        <el-form-item label="选择权限">
+          <el-tree
+            ref="permissionTree"
+            :data="menuList"
+            show-checkbox
+            node-key="_id"
+            default-expand-all
+            :props="{label: 'menuName'}"
+          >
+          </el-tree>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showPermission=false">取 消</el-button>
+          <el-button type="primary" @click="handlePermissionSubmit">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
 
   </div>
 </template>
@@ -106,6 +131,11 @@ const rules = reactive({
     { min: 2, max: 10, message: '长度在2-8个字符', trigger: 'blur' }
   ]
 })
+// 权限展示
+const showPermission = ref(false)
+const curRoleName = ref('')
+const curRoleId = ref('')
+const menuList = ref([])
 
 // 获取角色管理列表接口
 const useRolesListEffect = (proxy) => {
@@ -179,6 +209,7 @@ export default {
   setup () {
     onMounted(() => {
       getRoleAllList()
+      getMenuList()
     })
     // 实例化上下文对象
     const { proxy } = getCurrentInstance()
@@ -189,10 +220,52 @@ export default {
     const { handleClose, handleSubmit, handleReset } = useCloseAndSubmitEffect(showModal, proxy, action)
     // 分页
     const handleCurrentChange = () => {}
+    const handleOpenPermission = (row) => {
+      curRoleId.value = row._id
+      curRoleName.value = row.roleName
+      showPermission.value = true
+      const { checkedKeys } = row.permissionList
+      setTimeout(() => {
+        proxy.$refs.permissionTree.setCheckedKeys(checkedKeys)
+      }, 1000) 
+    }
+    const handlePermissionSubmit = async () => {
+      let nodes = proxy.$refs.permissionTree.getCheckedNodes()
+      let halfKeys = proxy.$refs.permissionTree.getHalfCheckedNodes()
+      let checkedKeys = []
+      let parentKeys = []
+      nodes.map((node) => {
+        if (!node.children){
+          checkedKeys.push(node._id)
+        } else {
+          parentKeys.push(node._id)
+        }
+      })
+      let params = {
+        _id: curRoleId,
+        permissionList: {
+          checkedKeys,
+          halfCheckedKeys: parentKeys.concat(halfKeys)
+        }
+      }
+      const res = proxy.$api.updatePermission(params)
+      showPermission.value = false
+      proxy.$message.success('设置成功')
+    }
+    const getMenuList = async () => {
+      try {
+        const list = await proxy.$api.MenuList();
+        menuList.value = list
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
 
     return { columns, queryForm, roleList, pager, roleForm, rules, showModal,
     handleQuery, handleSubmit, handleReset, handleClose, handleCreate,
-    handleCurrentChange, handleEdit, handleDel
+    handleCurrentChange, handleEdit, handleDel, handleOpenPermission, showPermission,
+    curRoleName, menuList, handlePermissionSubmit
     }
   }
 }
