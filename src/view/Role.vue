@@ -105,10 +105,21 @@
 import { reactive, ref, onMounted, getCurrentInstance } from 'vue'
 import utils from '../untils/utils'
 
+const actionMap = reactive({})
 const columns = ref([
   { label: '角色名称', prop: 'roleName' },
   { label: '备注', prop: 'remark' },
-  { label: '权限列表', prop: '' },
+  { 
+    label: '权限列表', prop: 'permissionList',
+    formatter(row, column, value) {
+      let names = []
+      let list = value.halfCheckedKeys || []
+      list.map(key => {
+        if (key) names.push(actionMap[key])
+      })
+      return names.join(' ')
+    }
+  },
   { 
     label: '创建时间', prop: 'createTime',
     formatter(row, column, value) {
@@ -204,6 +215,71 @@ const useCloseAndSubmitEffect = (showModal, proxy, action) => {
   }
   return { handleClose, handleSubmit, handleReset }
 }
+// 权限列表实现
+const usePermissionEffect = (proxy) => {
+  // 权限设置按钮
+  const handleOpenPermission = (row) => {
+    curRoleId.value = row._id
+    curRoleName.value = row.roleName
+    showPermission.value = true
+    const { checkedKeys } = row.permissionList
+    setTimeout(() => {
+      proxy.$refs.permissionTree.setCheckedKeys(checkedKeys)
+    }, 1) 
+  }
+  // 确定提交
+  const handlePermissionSubmit = async () => {
+    let nodes = proxy.$refs.permissionTree.getCheckedNodes()
+    let halfKeys = proxy.$refs.permissionTree.getHalfCheckedNodes()
+    let checkedKeys = []
+    let parentKeys = []
+    nodes.map((node) => {
+      if (!node.children){
+        checkedKeys.push(node._id)
+      } else {
+        parentKeys.push(node._id)
+      }
+    })
+    let params = {
+      _id: curRoleId,
+      permissionList: {
+        checkedKeys,
+        halfCheckedKeys: parentKeys.concat(halfKeys)
+      }
+    }
+    const res = await proxy.$api.updatePermission(params)
+    showPermission.value = false
+    proxy.$message.success('设置成功')
+  }
+  // 菜单列表初始化
+  const getMenuList = async () => {
+    try {
+      const list = await proxy.$api.MenuList();
+      menuList.value = list
+      getActionMap(list)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+    
+  const getActionMap = (list) => {
+    let actionMaps = {}
+    const deep = (arr) => {
+      while (arr.length) {
+        let item = arr.pop()
+        if (item.children && item.action) {
+          actionMaps[item._id] = item.menuName
+        }
+        if (item.children && !item.action) {
+          deep(item.children);
+        }
+      }
+    }
+    deep(JSON.parse(JSON.stringify(list)))
+    Object.assign(actionMap, actionMaps)
+  }
+  return { handleOpenPermission, handlePermissionSubmit, getMenuList  }
+}
 export default {
   name: 'Menu',
   setup () {
@@ -220,52 +296,12 @@ export default {
     const { handleClose, handleSubmit, handleReset } = useCloseAndSubmitEffect(showModal, proxy, action)
     // 分页
     const handleCurrentChange = () => {}
-    const handleOpenPermission = (row) => {
-      curRoleId.value = row._id
-      curRoleName.value = row.roleName
-      showPermission.value = true
-      const { checkedKeys } = row.permissionList
-      setTimeout(() => {
-        proxy.$refs.permissionTree.setCheckedKeys(checkedKeys)
-      }, 1000) 
-    }
-    const handlePermissionSubmit = async () => {
-      let nodes = proxy.$refs.permissionTree.getCheckedNodes()
-      let halfKeys = proxy.$refs.permissionTree.getHalfCheckedNodes()
-      let checkedKeys = []
-      let parentKeys = []
-      nodes.map((node) => {
-        if (!node.children){
-          checkedKeys.push(node._id)
-        } else {
-          parentKeys.push(node._id)
-        }
-      })
-      let params = {
-        _id: curRoleId,
-        permissionList: {
-          checkedKeys,
-          halfCheckedKeys: parentKeys.concat(halfKeys)
-        }
-      }
-      const res = proxy.$api.updatePermission(params)
-      showPermission.value = false
-      proxy.$message.success('设置成功')
-    }
-    const getMenuList = async () => {
-      try {
-        const list = await proxy.$api.MenuList();
-        menuList.value = list
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
+    const { handleOpenPermission, handlePermissionSubmit, getMenuList } = usePermissionEffect(proxy)
 
     return { columns, queryForm, roleList, pager, roleForm, rules, showModal,
     handleQuery, handleSubmit, handleReset, handleClose, handleCreate,
     handleCurrentChange, handleEdit, handleDel, handleOpenPermission, showPermission,
-    curRoleName, menuList, handlePermissionSubmit
+    curRoleName, menuList, handlePermissionSubmit, actionMap
     }
   }
 }
