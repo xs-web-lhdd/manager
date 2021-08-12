@@ -111,13 +111,22 @@ const columns = ref([
   { label: '备注', prop: 'remark' },
   { 
     label: '权限列表', prop: 'permissionList',
-    formatter(row, column, value) {
-      let names = []
-      let list = value.halfCheckedKeys || []
-      list.map(key => {
-        if (key) names.push(actionMap[key])
-      })
-      return names.join(' ')
+    // formatter(row, column, value) {
+    //   let names = []
+    //   let list = value.halfCheckedKeys || []
+    //   list.map(key => {
+    //     if (key) names.push(actionMap[key])
+    //   })
+    //   return names.join(' ')
+    // }
+    formatter (row, column, value) {
+      let names = [];
+      let list = value.halfCheckedKeys || [];
+      list.map((key) => {
+        let name = actionMap[key];
+        if (key && name) names.push(name);
+      });
+      return names.join(",");
     }
   },
   { 
@@ -224,7 +233,7 @@ const useCloseAndSubmitEffect = (showModal, proxy, action, getRoleAllList) => {
   return { handleClose, handleSubmit, handleReset }
 }
 // 权限列表实现
-const usePermissionEffect = (proxy) => {
+const usePermissionEffect = (proxy, getRoleAllList) => {
   // 权限设置按钮
   const handleOpenPermission = (row) => {
     curRoleId.value = row._id
@@ -249,15 +258,18 @@ const usePermissionEffect = (proxy) => {
       }
     })
     let params = {
-      _id: curRoleId,
+      _id: curRoleId.value,
       permissionList: {
         checkedKeys,
         halfCheckedKeys: parentKeys.concat(halfKeys)
       }
     }
     const res = await proxy.$api.updatePermission(params)
-    showPermission.value = false
-    proxy.$message.success('设置成功')
+    if (res) {
+      showPermission.value = false
+      proxy.$message.success('设置成功')
+      getRoleAllList()
+    }
   }
   // 菜单列表初始化
   const getMenuList = async () => {
@@ -307,7 +319,7 @@ export default {
       pager.pageNum = current
       getRoleAllList()
     }
-    const { handleOpenPermission, handlePermissionSubmit, getMenuList } = usePermissionEffect(proxy)
+    const { handleOpenPermission, handlePermissionSubmit, getMenuList } = usePermissionEffect(proxy, getRoleAllList)
 
     return { columns, queryForm, roleList, pager, roleForm, rules, showModal,
     handleQuery, handleSubmit, handleReset, handleClose, handleCreate,

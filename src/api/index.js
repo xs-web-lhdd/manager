@@ -26,7 +26,7 @@ export default {
       url: '/menu/list',
       method: 'get',
       data: params,
-      mock: true
+      // mock: true
     })
   },
   getUserList(params) {
@@ -98,7 +98,7 @@ export default {
       url: '/roles/update/permission',
       method: 'post',
       data: params,
-      mock: true
+      // mock: true
     })
   }
 }
