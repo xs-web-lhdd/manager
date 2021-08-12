@@ -121,6 +121,12 @@ const columns = ref([
     }
   },
   { 
+    label: '更新时间', prop: 'updateTime',
+    formatter(row, column, value) {
+      return utils.formateDate(new Date(value))
+    }
+  },
+  { 
     label: '创建时间', prop: 'createTime',
     formatter(row, column, value) {
       return utils.formateDate(new Date(value))
@@ -133,7 +139,7 @@ const roleList = ref([])
 const pager = reactive({
   pageNum: 1,
   total: 100,
-  pageSize: 1
+  pageSize: 10
 })
 const roleForm = reactive({})
 const rules = reactive({
@@ -152,7 +158,7 @@ const menuList = ref([])
 const useRolesListEffect = (proxy) => {
   // 获取请求接口
   const getRoleAllList = async () => {
-    const { list, page }  = await proxy.$api.getRoleAllList(queryForm)
+    const { list, page }  = await proxy.$api.getRoleAllList({...queryForm, ...pager})
     roleList.value = list
     pager.total = page.total
   }
@@ -163,7 +169,7 @@ const useRolesListEffect = (proxy) => {
   return { getRoleAllList, handleQuery }
 }
 // 创建、编辑、删除
-const useCreateEditDeleteEffect = (action, proxy, showModal) => {
+const useCreateEditDeleteEffect = (action, proxy, showModal, getRoleAllList) => {
   // 创建
   const handleCreate = () => {
     showModal.value = true
@@ -180,16 +186,17 @@ const useCreateEditDeleteEffect = (action, proxy, showModal) => {
   // 删除
   const handleDel = async (id) => {
     action.value = 'delete'
-    let params = { id, action }
+    let params = { _id: id, action: action.value }
     const res = await proxy.$api.rolesOperate(params)
     if (res) {
       proxy.$message.success('删除成功')
+      getRoleAllList()
     }
   }
   return { handleCreate, handleEdit, handleDel }
 }
 // 取消和提交和重置
-const useCloseAndSubmitEffect = (showModal, proxy, action) => {
+const useCloseAndSubmitEffect = (showModal, proxy, action, getRoleAllList) => {
   // 取消弹框
   const handleClose = () => {
     showModal.value = false
@@ -200,11 +207,12 @@ const useCloseAndSubmitEffect = (showModal, proxy, action) => {
     proxy.$refs.dialogForm.validate(async (valid) => {
       if (valid) {
         showModal.value = false
-        let params = { ...roleForm, action }
+        let params = { ...roleForm, action: action.value }
         const res = await proxy.$api.rolesOperate(params)
         if (res) {
           handleReset('dialogForm')
           proxy.$message.success('提交成功')
+          getRoleAllList()
         }
       }
     })
@@ -292,10 +300,13 @@ export default {
     const action = ref('')
     const showModal = ref(false)
     const { getRoleAllList, handleQuery } = useRolesListEffect(proxy)
-    const { handleCreate, handleEdit, handleDel } = useCreateEditDeleteEffect(action, proxy, showModal)
-    const { handleClose, handleSubmit, handleReset } = useCloseAndSubmitEffect(showModal, proxy, action)
+    const { handleCreate, handleEdit, handleDel } = useCreateEditDeleteEffect(action, proxy, showModal, getRoleAllList)
+    const { handleClose, handleSubmit, handleReset } = useCloseAndSubmitEffect(showModal, proxy, action, getRoleAllList)
     // 分页
-    const handleCurrentChange = () => {}
+    const handleCurrentChange = (current) => {
+      pager.pageNum = current
+      getRoleAllList()
+    }
     const { handleOpenPermission, handlePermissionSubmit, getMenuList } = usePermissionEffect(proxy)
 
     return { columns, queryForm, roleList, pager, roleForm, rules, showModal,
