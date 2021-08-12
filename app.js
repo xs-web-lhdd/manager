@@ -10,6 +10,7 @@ const koajwt = require('koa-jwt')
 
 const users = require('./routes/users')
 const menus = require('./routes/menus')
+const roles = require('./routes/roles')
 const util = require('./utils/util')
 
 
@@ -50,6 +51,7 @@ app.use(koajwt({ secret: 'imooc' }).unless({
 // routes
 app.use(users.routes(), users.allowedMethods())
 app.use(menus.routes(), menus.allowedMethods())
+app.use(roles.routes(), roles.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {
