@@ -106,6 +106,74 @@ const rules = reactive({
     { min: 2, max: 10, message: '长度在2-8个字符', trigger: 'blur' }
   ]
 })
+
+// 获取角色管理列表接口
+const useRolesListEffect = (proxy) => {
+  // 获取请求接口
+  const getRoleAllList = async () => {
+    const { list, page }  = await proxy.$api.getRoleAllList(queryForm)
+    roleList.value = list
+    pager.total = page.total
+  }
+  // 查询
+  const handleQuery = () => {
+    getRoleAllList()
+  }
+  return { getRoleAllList, handleQuery }
+}
+// 创建、编辑、删除
+const useCreateEditDeleteEffect = (action, proxy, showModal) => {
+  // 创建
+  const handleCreate = () => {
+    showModal.value = true
+    action.value = 'create'
+  }
+  // 编辑
+  const handleEdit = (row) => {
+    showModal.value = true
+    action.value = 'edit'
+    proxy.$nextTick(() => {
+      Object.assign(roleForm, row)
+    })
+  }
+  // 删除
+  const handleDel = async (id) => {
+    action.value = 'delete'
+    let params = { id, action }
+    const res = await proxy.$api.rolesOperate(params)
+    if (res) {
+      proxy.$message.success('删除成功')
+    }
+  }
+  return { handleCreate, handleEdit, handleDel }
+}
+// 取消和提交和重置
+const useCloseAndSubmitEffect = (showModal, proxy, action) => {
+  // 取消弹框
+  const handleClose = () => {
+    showModal.value = false
+    handleReset('dialogForm')
+  }
+  // 确定提交
+  const handleSubmit = () => {
+    proxy.$refs.dialogForm.validate(async (valid) => {
+      if (valid) {
+        showModal.value = false
+        let params = { ...roleForm, action }
+        const res = await proxy.$api.rolesOperate(params)
+        if (res) {
+          handleReset('dialogForm')
+          proxy.$message.success('提交成功')
+        }
+      }
+    })
+  }
+  // 重置
+  const handleReset = (form) => {
+    proxy.$refs[form].resetFields()
+  }
+  return { handleClose, handleSubmit, handleReset }
+}
 export default {
   name: 'Menu',
   setup () {
@@ -113,64 +181,12 @@ export default {
       getRoleAllList()
     })
     // 实例化上下文对象
-    const { ctx, proxy } = getCurrentInstance()
-    // 获取请求接口
-    const getRoleAllList = async () => {
-      const { list, page }  = await proxy.$api.getRoleAllList(queryForm)
-      roleList.value = list
-      pager.total = page.total
-    }
-    // 查询
-    const handleQuery = () => {
-      getRoleAllList()
-    }
+    const { proxy } = getCurrentInstance()
     const action = ref('')
-    // 创建
-    const handleCreate = () => {
-      showModal.value = true
-      action.value = 'create'
-    }
-    // 编辑
-    const handleEdit = (row) => {
-      showModal.value = true
-      action.value = 'edit'
-      proxy.$nextTick(() => {
-        Object.assign(roleForm, row)
-      })
-    }
-    // 删除
-    const handleDel = async (id) => {
-      action.value = 'delete'
-      let params = { id, action }
-      const res = await proxy.$api.rolesOperate(params)
-      if (res) {
-        proxy.$message.success('删除成功')
-      }
-    }
-    // 重置
-    const handleReset = (form) => {
-      ctx.$refs[form].resetFields()
-    }
-    // 取消弹框
-    const handleClose = () => {
-      showModal.value = false
-      handleReset('dialogForm')
-    }
-    // 确定提交
     const showModal = ref(false)
-    const handleSubmit = () => {
-      proxy.$refs.dialogForm.validate(async (valid) => {
-        if (valid) {
-          showModal.value = false
-          let params = { ...roleForm, action }
-          const res = await proxy.$api.rolesOperate(params)
-          if (res) {
-            handleReset('dialogForm')
-            proxy.$message.success('提交成功')
-          }
-        }
-      })
-    }
+    const { getRoleAllList, handleQuery } = useRolesListEffect(proxy)
+    const { handleCreate, handleEdit, handleDel } = useCreateEditDeleteEffect(action, proxy, showModal)
+    const { handleClose, handleSubmit, handleReset } = useCloseAndSubmitEffect(showModal, proxy, action)
     // 分页
     const handleCurrentChange = () => {}
 
