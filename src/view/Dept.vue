@@ -15,7 +15,7 @@
       <div class="action">
         <el-button type="primary" @click="handleCreate">创建</el-button>
       </div>
-      <el-table :data="deptList">
+      <el-table :data="deptList" row-key="_id">
         <el-table-column
           v-for="item in columns"
           :key="item.prop"
@@ -23,7 +23,7 @@
           :label="item.label"
           :width="item.width"
           :formatter="item.formatter"
-          align="center"
+          :align="item.align"
         >
         </el-table-column>
         <el-table-column
@@ -97,8 +97,8 @@ const queryForm = reactive({
   deptName: ''
 })
 const columns = ref([
-  { label: '部门名称', prop: 'deptName' },
-  { label: '负责人', prop: 'userName' },
+  { label: '部门名称', prop: 'deptName', width: '120', align: 'left' },
+  { label: '负责人', prop: 'userName', align: 'center' },
   { 
     label: '更新时间', prop: 'updateTime',
     formatter(row, column, value) {
@@ -118,7 +118,9 @@ const pager= {
   pageSize: 10
 }
 const userList = ref([])
-const deptForm = reactive({})
+const deptForm = reactive({
+  parentId: [null]
+})
 const rules = reactive({
   parentId: [{ required: true, message: '请选择上级部门', trigger: 'blur' }],
   deptName: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
@@ -137,7 +139,7 @@ export default {
     }
     const getDeptList = async () => {
       const list = await proxy.$api.getDeptList({
-        ...queryForm, ...pager
+        ...queryForm
       })
       deptList.value = list
     }
@@ -155,7 +157,6 @@ export default {
       proxy.$nextTick(() => {
         Object.assign(deptForm, row, {user: `${row.userId}/${row.userName}/${row.userEmail}`})
       })
-      console.log(deptForm);
     }
     // 删除
     const handleDel = async (_id) => {
@@ -175,16 +176,13 @@ export default {
         if (valid) {
           let params = {...deptForm, action: action.value}
           delete params.user
-          console.log(params);
           let res = await proxy.$api.deptOperate(params)
-          if (res) {
-            let info
-            action.value == 'create'? info = '创建成功' : info = '编辑成功'
-            proxy.$message.success(info)
-            handleReset('dialogForm')
-            showModal.value = false
-            getDeptList()
-          }
+          let info
+          action.value == 'create'? info = '创建成功' : info = '编辑成功'
+          proxy.$message.success(info)
+          handleReset('dialogForm')
+          showModal.value = false
+          getDeptList()
         }
       })
     }
