@@ -15,8 +15,31 @@ router.get('/list', async (ctx, next) => {
   let params = {}
   if (deptName) params.deptName = deptName
   let rootList = await Dept.find(params)
-  ctx.body = util.success(rootList)
+  if (deptName) {
+    ctx.body = util.success(rootList)
+  } else {
+    const res = getTreeDept(rootList, null, [])
+    ctx.body = util.success(res)
+  }
 })
+
+// 递归拼接树形列表
+function getTreeDept (rootList, id, list) {
+  for (let i = 0; i < rootList.length; i++) {
+      let item = rootList[i]
+      if (String(item.parentId.slice().pop()) == String(id)) {
+          list.push(item._doc)
+      }
+  }
+  list.map(item => {
+      item.children = []
+      getTreeDept(rootList, item._id, item.children)
+      if (item.children.length == 0) {
+          delete item.children;
+      }
+  })
+  return list;
+}
 
 // 部门操作：创建、编辑、删除
 router.post('/operate', async (ctx, next) => {
