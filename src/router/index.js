@@ -14,7 +14,7 @@ const routes = [
         children: [
             {
                 name: 'Welcome',
-                path: '/welcome',
+                path: '/Welcome',
                 meta: {
                     title: '欢迎体验Vue3'
                 },
