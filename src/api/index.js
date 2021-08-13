@@ -100,5 +100,21 @@ export default {
       data: params,
       // mock: true
     })
+  },
+  getAllUserList(params) {
+    return request({
+      url: '/users/all/list',
+      method: 'get',
+      data: params,
+      mock: true
+    })
+  },
+  deptOperate(params) {
+    return request({
+      url: '/dept/operate',
+      method: 'post',
+      data: params,
+      mock: true
+    })
   }
 }
