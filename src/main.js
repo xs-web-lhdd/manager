@@ -11,6 +11,25 @@ import './assets/style/index.scss'
 import api from './api'
 
 const app = createApp(App)
+
+// 全局指令
+app.directive('has', {
+  beforeMount: (el, binding) => {
+    // 获取按钮权限
+    let actionList = storage.getItem('actionList')
+    let value = binding.value
+    // 判断列表中是否有相应的权限标识
+    let hasPermission = actionList.includes(value)
+    if (!hasPermission) {
+      // 元素隐藏并删除
+      el.style = "display: none"
+      setTimeout(() => {
+        el.parentNode.removeChild(el)
+      }, 0);
+    }
+  }
+})
+
 // 全局挂载
 app.config.globalProperties.$request = request
 app.config.globalProperties.$storage = storage

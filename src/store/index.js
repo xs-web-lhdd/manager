@@ -7,12 +7,22 @@ import { createStore } from 'vuex'
 import storage from './../untils/storage'
 export default createStore({
   state: {
-    userInfo: "" || storage.getItem('userInfo')  // 获取用户信息
+    userInfo: "" || storage.getItem('userInfo'),  // 获取用户信息
+    menuList: storage.getItem('menuList') || [],
+    actionList: storage.getItem('actionList') || []
   },
   mutations: {
     saveUserInfo(state, userInfo) {
       state.userInfo = userInfo
       storage.setItem('userInfo', userInfo)
+    },
+    saveUserMenu(state, menuList) {
+      state.menuList = menuList
+      storage.setItem('menuList', menuList)
+    },
+    saveUserAction(state, actionList) {
+      state.actionList = actionList
+      storage.setItem('actionList', actionList)
     }
   },
   actions: {
