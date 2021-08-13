@@ -61,6 +61,14 @@ const routes = [
             title: '登录'
         },
         component:() => import('../view/Login.vue')
+    },
+    {
+        name: '404',
+        path: '/404',
+        meta: {
+            title: '页面不存在'
+        },
+        component:() => import('../view/404.vue')
     }
 ]
 
