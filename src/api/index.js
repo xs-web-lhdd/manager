@@ -53,11 +53,11 @@ export default {
       // mock: true
     })
   },
-  getDeptList() {
+  getDeptList(params) {
     return request({
       url: '/dept/list',
       method: 'get',
-      data: {},
+      data: params,
       mock: true
     })
   },
