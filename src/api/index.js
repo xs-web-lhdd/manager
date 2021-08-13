@@ -124,5 +124,13 @@ export default {
       data: params,
       // mock: true
     })
+  },
+  getLeaveList(params) {
+    return request({
+      url: '/leave/list',
+      method: 'get',
+      data: params,
+      mock: true
+    })
   }
 }
