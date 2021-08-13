@@ -3,7 +3,7 @@
     <div class="query-form">
       <el-form ref="form" :inline="true" :model="queryForm">
         <el-form-item label="审批状态" prop="applyState">
-          <el-select v-model="queryForm.applyState">
+          <el-select v-model="queryForm.applyState" placeholder="请选择审批状态">
             <el-option value="" label="全部"></el-option>
             <el-option :value="1" label="待审批"></el-option>
             <el-option :value="2" label="审批中"></el-option>
@@ -34,16 +34,8 @@
         </el-table-column>
         <el-table-column label="操作" width="150">
           <template #default="scope">
-            <el-button size="mini" @click="handleDetail(scope.row)"
-              >查看</el-button
-            >
-            <el-button
-              type="danger"
-              size="mini"
-              @click="handleDelete(scope.row._id)"
-              v-if="[1, 2].includes(scope.row.applyState)"
-              >作废</el-button
-            >
+            <el-button size="mini" @click="handleDetail(scope.row)">查看</el-button>
+            <el-button type="danger" size="mini" @click="handleDelete(scope.row._id)">作废</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -56,7 +48,7 @@
         @current-change="handleCurrentChange"
       />
     </div>
-    <el-dialog title="申请休假" v-model="showModal" width="70%">
+    <el-dialog title="申请休假" v-model="showModal" width="70%" @close="handleClose">
       <el-form
         ref="dialogForm"
         :model="leaveForm"
@@ -64,7 +56,7 @@
         :rules="rules"
       >
         <el-form-item label="休假类型" prop="applyType" required>
-          <el-select v-model="leaveForm.applyType">
+          <el-select v-model="leaveForm.applyType" placeholder="请选择休假类型">
             <el-option label="事假" :value="1"></el-option>
             <el-option label="调休" :value="2"></el-option>
             <el-option label="年假" :value="3"></el-option>
@@ -206,6 +198,11 @@ const pager = reactive({
   pageSize: 10,
   total: 1
 })
+const leaveForm = reactive({
+  leaveTime: '2天'
+})
+const action = ref('')
+const detail = reactive({})
 export default {
   name: 'Leave',
   setup () {
@@ -216,11 +213,17 @@ export default {
     })
     // 重置
     const handleReset = (form) => {
-
+      proxy.$refs[form].resetFields()
+    }
+    const showModal = ref(false)
+    // 申请休假
+    const handleApply = () => {
+      showModal.value = true
     }
     // 关闭
     const handleClose = () => {
-
+      showModal.value = false
+      handleReset('dialogForm')
     }
     // 确定提交
     const handleSubmit = () => {
@@ -237,9 +240,16 @@ export default {
       applyList.value = list
       pager.total = page.total
     }
-    return { queryForm, applyList, columns, pager,
+    const showDetailModal = ref(false)
+    // 查看申请详情
+    const handleDetail = (row) => {
+      showDetailModal.value = true
+    }
+    return { queryForm, applyList, columns, pager, showModal,
+      leaveForm, showDetailModal, action, detail,
+      handleApply,
       getApplyList, handleReset, handleClose, handleSubmit,
-      handleCurrentChange
+      handleCurrentChange, handleDetail
     }
   }
 }
