@@ -132,7 +132,8 @@ router.get('/getPermisssionList', async (ctx, next) => {
   const authorization = ctx.request.headers.authorization
   let { data } = utils.decoded(authorization)
   let menuList = await getMenuList(data.role, data.roleList)
-  ctx.body = utils.success(menuList)
+  let actionList = getActionList(JSON.parse(JSON.stringify(menuList))) // 深克隆的简单方法
+  ctx.body = utils.success({ menuList, actionList })
 })
 
 getMenuList = async (userRole, roleKeys) => {
@@ -151,6 +152,26 @@ getMenuList = async (userRole, roleKeys) => {
     rootList = await Menu.find({ _id: { $in: permissionList } })
   }
   return util.getTreeMenu(rootList, null, [])
+}
+
+// 按钮权限过滤---从菜单中进行过滤按钮
+getActionList = (list) => {
+  const actionList = []
+  const deep = (arr) => {
+    while (arr.length) {
+      let item = arr.pop()
+      if (item.action) {
+        item.action.map(action => {
+          actionList.push(action.menuCode)
+        })
+      }
+      if (item.children && !item.action) {
+        deep(item.children);
+      }
+    }
+  }
+  deep(list)
+  return actionList
 }
 
 module.exports = router
