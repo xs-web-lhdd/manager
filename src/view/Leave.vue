@@ -252,6 +252,8 @@ export default {
         leaveForm.leaveTime = '0天'
         leaveForm.startTime = ''
         leaveForm.endTime = ''
+        leaveForm.leaveTime = ''
+        return
       }
       leaveForm.leaveTime = (endTime - startTime) / (60*60*24*1000) + 1 + '天'
     }

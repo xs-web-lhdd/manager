@@ -50,17 +50,16 @@
     </div>
 
     <el-dialog
-      title="申请休假详情"
+      title="审核"
       width="50%"
       v-model="showDetailModal"
       destroy-on-close
+      @close="handleClose"
     >
-      <el-steps :active="detail.applyState" align-center>
-        <el-step title="待审批"></el-step>
-        <el-step title="审批中"></el-step>
-        <el-step title="审批通过/审批拒绝"></el-step>
-      </el-steps>
-      <el-form label-width="120px" label-suffix=":">
+      <el-form :model="auditForm" ref="dialogForm" label-width="120px" label-suffix=":" :rules="rules">
+        <el-form-item label="申请人">
+          <div>{{ detail.applyUser.userName }}</div>
+        </el-form-item>
         <el-form-item label="休假类型">
           <div>{{ detail.applyTypeName }}</div>
         </el-form-item>
@@ -79,7 +78,16 @@
         <el-form-item label="审批人">
           <div>{{ detail.curAuditUserName }}</div>
         </el-form-item>
+        <el-form-item label="备注信息" prop="remark">
+          <el-input type="textarea" rows="3" placeholder="请输入审核备注" v-model="auditForm.remark" />
+        </el-form-item>
       </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleApprove('pass')">审核通过</el-button>
+          <el-button type="primary" @click="handleApprove('refuse')">驳回</el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -104,7 +112,7 @@ const columns = reactive([
     formatter(row) {
       return (
         utils.formateDate(new Date(row.startTime), "yyyy-MM-dd") +
-        "到" +
+        " 到 " +
         utils.formateDate(new Date(row.endTime), "yyyy-MM-dd")
       );
     },
@@ -145,6 +153,10 @@ const pager = reactive({
   pageSize: 10,
   total: 1
 })
+const auditForm = reactive({})
+const rules = reactive({
+  remark: [{ required: true, message: '请输入审核备注', tigger: 'blur' }]
+})
 export default {
   name: 'Leave',
   setup () {
@@ -159,6 +171,14 @@ export default {
       const { list, page } = await proxy.$api.getLeaveList(params)
       applyList.value = list
       pager.total = page.total
+    }
+    const handleClose = () => {
+      showDetailModal.value = false
+      handleReset('dialogForm')
+    }
+    // 重置
+    const handleReset = (form) => {
+      proxy.$refs[form].resetFields()
     }
     const detail = ref({})
     const userInfo = proxy.$store.state.userInfo
@@ -188,10 +208,22 @@ export default {
     }
     // 分页
     const handleCurrentChange = () => {}
+    // 审核通过 / 驳回
+    const handleApprove = (action) => {
+      proxy.$refs.dialogForm.validate(async (valid) => {
+        if (valid) {
+          let params = { id: detail.value._id, remark: auditForm.remark, action }
+          const res = await proxy.$api.leaveApprove(params)
+          handleClose()
+          proxy.$message.success('处理成功')
+          getApplyList()
+        }
+      })
+    }
     return { queryForm, applyList, columns, pager,
-      showDetailModal, detail, userInfo,
+      showDetailModal, detail, userInfo, auditForm, rules,
       getApplyList, handleCurrentChange,
-      handleDetail,
+      handleDetail, handleReset, handleClose, handleApprove
     }
   }
 }
