@@ -35,7 +35,11 @@
         <el-table-column label="操作" width="150">
           <template #default="scope">
             <el-button size="mini" @click="handleDetail(scope.row)">查看</el-button>
-            <el-button type="danger" size="mini" @click="handleDelete(scope.row._id)">作废</el-button>
+            <el-button type="danger"
+              size="mini"
+              @click="handleDelete(scope.row._id)"
+              v-if="[1, 2].includes(scope.row.applyState)"
+            >作废</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -88,7 +92,7 @@
           </el-row>
         </el-form-item>
         <el-form-item label="休假时长">
-          {{ leaveForm.leaveTime }}天
+          {{ leaveForm.leaveTime }}
         </el-form-item>
         <el-form-item label="休假原因" prop="reasons">
           <el-input
@@ -112,10 +116,7 @@
       v-model="showDetailModal"
       destroy-on-close
     >
-      <el-steps
-        :active="detail.applyState > 2 ? 3 : detail.applyState"
-        align-center
-      >
+      <el-steps :active="detail.applyState" align-center>
         <el-step title="待审批"></el-step>
         <el-step title="审批中"></el-step>
         <el-step title="审批通过/审批拒绝"></el-step>
@@ -198,11 +199,9 @@ const pager = reactive({
   pageSize: 10,
   total: 1
 })
-const leaveForm = reactive({
-  leaveTime: 2
-})
+const leaveForm = reactive({})
 const action = ref('')
-const detail = reactive({})
+const detail = ref({})
 const rules = reactive({
   applyType: [{ required: true, message: '请选择休假类型', trigger: 'blur' }],
   startTime: [{ required: true, message: '请选择开始时间', trigger: 'blur' }],
@@ -254,7 +253,7 @@ export default {
         leaveForm.startTime = ''
         leaveForm.endTime = ''
       }
-      leaveForm.leaveTime = (endTime - startTime) / (60*60*24*1000) + 1
+      leaveForm.leaveTime = (endTime - startTime) / (60*60*24*1000) + 1 + '天'
     }
     // 分页
     const handleCurrentChange = () => {
@@ -271,12 +270,39 @@ export default {
     // 查看申请详情
     const handleDetail = (row) => {
       showDetailModal.value = true
+      let data = {...row}
+      data.applyTypeName = {
+        1: '事假',
+        2: '调休',
+        3: '年假'
+      }[data.applyType]
+      data.time = (
+        utils.formateDate(new Date(data.startTime), "yyyy-MM-dd") +
+        "到" +
+        utils.formateDate(new Date(data.endTime), "yyyy-MM-dd")
+      )
+      data.applyStateName = {
+        1: '待审批',
+        2: '审批中',
+        3: '审批拒绝',
+        4: '审批通过',
+        5: '作废'
+      }[data.applyState]
+      detail.value = data
+    }
+    // 作废
+    const handleDelete = async (_id) => {
+      action.value = 'delete'
+      let params = { id: _id, action: action.value }
+      const res = await proxy.$api.leaveOperate(params)
+      proxy.$message.success('作废成功')
+      getApplyList()
     }
     return { queryForm, applyList, columns, pager, showModal,
       leaveForm, showDetailModal, action, detail, rules,
       handleApply, handleDateChange,
       getApplyList, handleReset, handleClose, handleSubmit,
-      handleCurrentChange, handleDetail
+      handleCurrentChange, handleDetail, handleDelete
     }
   }
 }
