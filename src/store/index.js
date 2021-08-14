@@ -9,7 +9,8 @@ export default createStore({
   state: {
     userInfo: "" || storage.getItem('userInfo'),  // 获取用户信息
     menuList: storage.getItem('menuList') || [],
-    actionList: storage.getItem('actionList') || []
+    actionList: storage.getItem('actionList') || [],
+    noticeCount: 0
   },
   mutations: {
     saveUserInfo(state, userInfo) {
@@ -23,6 +24,10 @@ export default createStore({
     saveUserAction(state, actionList) {
       state.actionList = actionList
       storage.setItem('actionList', actionList)
+    },
+    saveNoticeCount(state, noticeCount) {
+      state.noticeCount = noticeCount
+      storage.setItem('noticeCount', noticeCount)
     }
   },
   actions: {

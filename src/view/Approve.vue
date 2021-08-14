@@ -217,6 +217,7 @@ export default {
           handleClose()
           proxy.$message.success('处理成功')
           getApplyList()
+          proxy.$store.commit('saveNoticeCount', proxy.$store.state.noticeCount - 1)
         }
       })
     }

@@ -27,7 +27,7 @@
           </div>
         </div>
         <div class="userinfo">
-          <el-badge :is-dot="noticeCount>0?true:false" class="notice" type="danger">
+          <el-badge :is-dot="$store.state.noticeCount>0?true:false" class="notice" type="danger" @click="$router.push('/audit/approve')">
             <i class="el-icon-bell"></i>
           </el-badge>
 
@@ -63,9 +63,13 @@ export default {
     return {
       userInfo: this.$store.state.userInfo,
       isCollapse: false,
-      noticeCount: 0,
       userMenu: [],
       activeMenu: location.hash.slice(1)
+    }
+  },
+  computed: {
+    noticeCount() {
+      return this.$store.state.noticeCount
     }
   },
   mounted() {
@@ -85,7 +89,7 @@ export default {
     async getNoticeCount() {
       try {
         const count = await this.$api.noticeCount()
-        this.noticeCount = count
+        this.$store.commit('saveNoticeCount', count)
       } catch (error) {
         console.log(error);
       }
