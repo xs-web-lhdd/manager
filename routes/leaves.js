@@ -12,13 +12,25 @@ router.prefix('/api/leave')
 
 // 查询申请列表
 router.get('/list', async (ctx, next) => {
-  const { applyState } = ctx.request.query
+  const { applyState, type } = ctx.request.query
   const { page, skipIndex } = util.pager(ctx.request.query)
   const authorization = ctx.request.headers.authorization
   let { data } = util.decoded(authorization)
   try {
-    let params = {
-      "applyUser.userId": data.userId
+    let params
+    if (type == 'approve') {
+      if (applyState === 1) {
+        params.curAuditUserName = data.userName
+        params.applyState = 1
+      } else if (applyState > 1) {
+        params = { 'auditFlows.userId': data.userId, applyState }
+      } else {
+        params = { 'auditFlows.userId': data.userId }
+      }
+    } else {
+      params = {
+        "applyUser.userId": data.userId
+      }
     }
     if (applyState) params.applyState = applyState
     const query = Leave.find(params)
