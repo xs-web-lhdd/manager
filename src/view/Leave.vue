@@ -55,17 +55,17 @@
         label-width="120px"
         :rules="rules"
       >
-        <el-form-item label="休假类型" prop="applyType" required>
+        <el-form-item label="休假类型" prop="applyType">
           <el-select v-model="leaveForm.applyType" placeholder="请选择休假类型">
             <el-option label="事假" :value="1"></el-option>
             <el-option label="调休" :value="2"></el-option>
             <el-option label="年假" :value="3"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="休假类型" required>
+        <el-form-item label="休假时间段" required>
           <el-row>
             <el-col :span="8">
-              <el-form-item prop="startTime" required>
+              <el-form-item prop="startTime">
                 <el-date-picker
                   v-model="leaveForm.startTime"
                   type="date"
@@ -76,7 +76,7 @@
             </el-col>
             <el-col :span="1">-</el-col>
             <el-col :span="8">
-              <el-form-item prop="endTime" required>
+              <el-form-item prop="endTime">
                 <el-date-picker
                   v-model="leaveForm.endTime"
                   type="date"
@@ -87,10 +87,10 @@
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label="休假时长" required>
-          {{ leaveForm.leaveTime }}
+        <el-form-item label="休假时长">
+          {{ leaveForm.leaveTime }}天
         </el-form-item>
-        <el-form-item label="休假原因" prop="reasons" required>
+        <el-form-item label="休假原因" prop="reasons">
           <el-input
             type="textarea"
             :row="3"
@@ -199,10 +199,16 @@ const pager = reactive({
   total: 1
 })
 const leaveForm = reactive({
-  leaveTime: '2天'
+  leaveTime: 2
 })
 const action = ref('')
 const detail = reactive({})
+const rules = reactive({
+  applyType: [{ required: true, message: '请选择休假类型', trigger: 'blur' }],
+  startTime: [{ required: true, message: '请选择开始时间', trigger: 'blur' }],
+  endTime: [{ required: true, message: '请选择结束时间', trigger: 'blur' }],
+  reasons: [{ required: true, message: '请输入休假原因', trigger: 'blur' }]
+})
 export default {
   name: 'Leave',
   setup () {
@@ -219,6 +225,7 @@ export default {
     // 申请休假
     const handleApply = () => {
       showModal.value = true
+      action.value = 'create'
     }
     // 关闭
     const handleClose = () => {
@@ -227,7 +234,27 @@ export default {
     }
     // 确定提交
     const handleSubmit = () => {
-
+      proxy.$refs.dialogForm.validate(async (valid) => {
+        if (valid) {
+          let params = { ...leaveForm, action: action.value }
+          const res = await proxy.$api.leaveOperate(params)
+          proxy.$message.success('创建成功')
+          handleClose()
+          getApplyList()
+        }
+      })
+    }
+    // 日期
+    const handleDateChange = (key, value) => {
+      let { startTime, endTime } = leaveForm
+      if (!startTime || !endTime) return
+      if (startTime > endTime) {
+        proxy.$message.error('开始时期不能晚于结束时间')
+        leaveForm.leaveTime = '0天'
+        leaveForm.startTime = ''
+        leaveForm.endTime = ''
+      }
+      leaveForm.leaveTime = (endTime - startTime) / (60*60*24*1000) + 1
     }
     // 分页
     const handleCurrentChange = () => {
@@ -246,8 +273,8 @@ export default {
       showDetailModal.value = true
     }
     return { queryForm, applyList, columns, pager, showModal,
-      leaveForm, showDetailModal, action, detail,
-      handleApply,
+      leaveForm, showDetailModal, action, detail, rules,
+      handleApply, handleDateChange,
       getApplyList, handleReset, handleClose, handleSubmit,
       handleCurrentChange, handleDetail
     }
