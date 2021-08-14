@@ -51,7 +51,7 @@
             v-model="deptForm.parentId"
             placeholder="请选择上级部门"
             :options="deptList"
-            props="{ checkStrictly: true, value: '_id', label: 'deptName' }"
+            :props="{ checkStrictly: true, value: '_id', label: 'deptName' }"
             clearable
             style="width: 100%"
           >

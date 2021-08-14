@@ -66,7 +66,7 @@ const routes = [
                 meta: {
                     title: '待我审批'
                 },
-                component: () => import('../view/Leave.vue')
+                component: () => import('../view/Approve.vue')
             }
         ] 
     },
