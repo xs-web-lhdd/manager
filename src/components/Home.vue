@@ -21,7 +21,7 @@
     <div :class="['content-right', isCollapse?'fold':'unfold']">
       <div class="nav-top">
         <div class="nav-left">
-          <div class="menu-fold" @click="toggle"><i class="el-icon-s-fold"></i></div>
+          <div class="menu-fold" @click="toggle"><i :class="[!isCollapse?'el-icon-s-fold':'el-icon-s-unfold']"></i></div>
           <div class="bread">
             <BreadCrumb />
           </div>

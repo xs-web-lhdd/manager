@@ -343,3 +343,136 @@ height: calc(100vh - 50px);
 
 详请见：https://www.runoob.com/cssref/func-calc.html
 
+##### 2、translation：
+
+指定某个东西发生变化时产生过渡：像：宽度：
+
+```js
+transition:  margin-left .5s;
+// 指定对margin-left产生过渡
+```
+
+详情见：https://www.runoob.com/cssref/css3-pr-transition-property.html
+
+#### Element-Plus组件详情：
+
+##### 1、表单验证：
+
+需要在el-form-item中添加:rules，然后可以在script中定义规则，也可以直接在:rules后面添加规则，一般在script中添加规则
+
+```js
+      rules: {
+        // 指定对谁进行验证：
+        userName: [
+          {
+            required: true, message: '请输入用户名', trigger: 'blur'
+          }
+        ],
+        userPwd: [
+          {
+            required: true, message: '请输入密码', trigger: 'blur'
+          }
+        ]
+      }
+```
+
+验证：
+
+在写验证规则时需要给el-form上绑定一个ref，然后在调用验证时获取到dom节点进行验证
+
+```js
+      this.$refs.userForm.validate((valid) => {
+        if (valid) {
+		   通过校验时执行的操作
+        } else { return false }
+      })
+```
+
+​		官方文档：[组件 | Element (element-plus.org)](https://element-plus.org/#/zh-CN/component/form)
+
+##### 2、下拉框使用：
+
+el-dropdown有command事件
+
+```vue
+          <el-dropdown @command="handleLogout">
+            <span class="user-link">
+              {{userInfo?.userName}}
+              <i class="el-icon--right"></i>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="email">邮箱：{{userInfo?.userEmail}}</el-dropdown-item>
+                <el-dropdown-item command="logout">退出</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+```
+
+用@command进行事件绑定，然后根据值的不同执行不同事件
+
+```js
+    handleLogout(key) {
+      if (key === 'email') return
+      this.$store.commit('saveUserInfo', '')
+      this.userInfo = null
+      this.$router.push('/login')
+    }
+```
+
+​	官方网址：[组件 | Element (element-plus.org)](https://element-plus.org/#/zh-CN/component/dropdown)
+
+##### 3、面包屑的实现：
+
+```vue
+<template>
+    <el-breadcrumb separator-class="el-icon-arrow-right">
+        <el-breadcrumb-item v-for="(item, index) in breadList" :key="index">
+          <router-link to="/Welcome" v-if="index === 0">{{item.meta.title}}</router-link>
+          <span v-else>{{item.meta.title}}</span>
+        </el-breadcrumb-item>
+    </el-breadcrumb>
+</template>
+
+<script>
+export default {
+  name: 'BreadCrumb',
+  computed: {
+    breadList() {
+      // 精髓：通过route得到相应的路由数组，然后进行循环遍历
+      return this.$route.matched
+    }
+  }
+}
+</script>
+```
+
+this.$route.matched是路由的数组，能拿到路由相关的信息，然后得到path，name等所需信息，用router-link做一个锚点，点击首页时跳到首页（因为任何页面都是由首页跳转过来的，所以matched中第一个必然是首页路由，因此可通过一个if语句+router-link进行跳转）
+
+​	官方网址：[组件 | Element (element-plus.org)](https://element-plus.org/#/zh-CN/component/breadcrumb)
+
+##### 4、侧边栏菜单递归组件使用：
+
+```vue
+  <template v-for="menu in userMenu" :key="menu._id">
+        <el-submenu v-if="menu.children && menu.children.length > 0 && menu.children[0].menuType==1" :index="menu.path">
+          <template #title>
+            <i :class="menu.icon"></i>
+            <span>{{menu.menuName}}</span>
+          </template>
+          <TreeMenu :userMenu="menu.children"/>
+        </el-submenu>
+        <el-menu-item v-else-if="menu.menuType == 1" :index="menu.path">{{menu.menuName}}</el-menu-item>
+  </template>
+```
+
+​	像导航这种就需要使用递归组件，在使用递归组件时要设置跳出递归的条件，否则会无限递归，就会报爆栈的错误，在该项目中使用递归组件时需要结合接口文档中的菜单列表，如果该菜单下面有子菜单，而且子菜单的数组长度不为0，而且子菜单下面的子菜单还是菜单而不是按钮的时候才进行递归组件，否则就展示该菜单下面的子菜单，不展示该菜单下面的按钮......说的有点啰里啰唆了，大家看上面if条件再看接口文档应该能看懂！！！溜了溜了......
+
+​	对了，这个里面还有一个小细节就是通过``` location.hash.slice(1) ```获取当前的路由地址，然后把当前都有地址在侧边栏中设置为高亮......貌似又迷糊了，看Home.vue中12行和67行代码吧！！！
+
+​	侧边栏：官方文档：[组件 | Element (element-plus.org)](https://element-plus.org/#/zh-CN/component/menu)
+
+
+
+
+
