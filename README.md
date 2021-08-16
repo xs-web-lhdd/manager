@@ -155,5 +155,154 @@ exports.info = (content) => {
 
 ​	mongodb基本操作见：https://github.com/xs-web-lhdd/jingdong/tree/server  里面README文件
 
+##### 3、工具函数的封装：
 
+```js
+/**
+ * @description 工具函数
+ * @author 凉风有信、
+ */
+
+// 统一状态码 
+const CODE = {
+    SUCCESS: 200,
+    PARAM_ERROR: 10001, // 参数错误
+    USER_ACCOUNT_ERROR: 20001, //账号或密码错误
+    USER_LOGIN_ERROR: 30001, // 用户未登录
+    BUSINESS_ERROR: 40001, //业务请求失败
+    AUTH_ERROR: 500001, // 认证失败或TOKEN过期
+}
+module.exports = {
+    /**
+     * 分页结构封装
+     * @param {number} pageNum 
+     * @param {number} pageSize 
+     */
+    pager({ pageNum = 1, pageSize = 10 }) {
+        pageNum *= 1;
+        pageSize *= 1;
+        // 从第几条数据进行索引
+        const skipIndex = (pageNum - 1) * pageSize;
+        return {
+            page: {
+                pageNum,
+                pageSize
+            },
+            skipIndex
+        }
+    },
+    // 成功返回
+    success(data = '', msg = '', code = CODE.SUCCESS) {
+        return {
+            code, data, msg
+        }
+    },
+    // 失败返回
+    fail(msg = '', code = CODE.BUSINESS_ERROR) {
+        return {
+            code, msg
+        }
+    },
+    CODE
+}
+```
+
+##### 4、数据库连接：
+
+config中index中配置：
+
+```js
+module.exports = {
+  // 数据库地址
+  URL: 'mongodb://localhost:27017/manager'
+}
+```
+
+连接（两者可以写在一起）：
+
+```js
+const mongoose = require('mongoose')
+mongoose.set('useFindAndModify', false)
+const config = require('./index')
+
+mongoose.connect(config.URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+
+const db = mongoose.connection
+
+db.on('error', err => {
+  console.error('mongoose connection error', err)
+})
+
+db.on('open', () => {
+  console.log('mongoose 连接成功')
+})
+
+module.exports = mongoose
+```
+
+数据库操作三部曲：
+
+​		1、连接数据库（固定写法了）
+
+​		2、创建数据库模型（按需求进行创建）
+
+​		3、对数据库进行增删改查（数据库操作最重要的一部分）
+
+以上是开发前通用架子搭建，下面就是该项目的业务代码了，嘿嘿嘿！！！
+
+
+
+#### 登录：
+
+通过jwt进行签名：
+
+```js
+router.post('/login', async (ctx, next) => {
+  try {
+    const { userName, userPwd } = ctx.request.body
+    // 返回数据库指定字段有三种方式
+    // 1、通过字符串空格的方式 ： 'userId userName userEmail state role deptId roleList'
+    // 2、通过JSON的方式 1代表返回，0代表不返回：  { userId:1, userName:0 }
+    // 3、通过select('userId')：打点调用select('userId')
+    const res = await User.findOne({
+      userName,
+      userPwd: md5(userPwd) // 因为密码在数据库中是经过md5加密过的，因此在登录进行查找时也要用加密后的密码去进行查找
+    }, 'userId userName userEmail state role deptId roleList')
+
+    if (res) {
+      const data = res._doc
+      const token = jwt.sign({
+        data: data
+      }, 'imooc', { expiresIn: '1h' })
+      data.token = token
+      ctx.body = utils.success(data)
+    } else {
+      ctx.body = utils.fail('账号或密码不正确')
+    }
+  } catch (error) {
+    ctx.body = utils.fail(error.msg)
+  }
+})
+```
+
+在找到用户后，要在返回的信息中注入服务端产生的token，将token存储到客户端
+
+```js
+// 引入jwt
+const jwt = require('jsonwebtoken')
+// 用jwt进行签名
+const token = jwt.sign({
+    data: data
+}, 'imooc', { expiresIn: '1h' })
+// 第一个参数是进行签名的数据，第二个参数是密钥，第三个参数是token过期时间
+```
+
+​	jwt官网：[jsonwebtoken - npm (npmjs.com)](https://www.npmjs.com/package/jsonwebtoken)
+
+###### jwt与session那些事：
+
+session做不到单点登录而jwt可以，jwt与session可参考以下文章：https://juejin.cn/post/6844904034181070861   https://juejin.cn/post/6844904115080790023   https://juejin.cn/post/6898630134530752520
 
