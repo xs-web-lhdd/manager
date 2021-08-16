@@ -38,6 +38,7 @@ yarn dev
 
 ```bash
 manger-serve
+	apidoc # 接口文档设计
 	bin
 	config # 配置文件
 	logs # 打印日志
@@ -152,7 +153,7 @@ exports.info = (content) => {
 
 ​	详情见：[Node.js 之 log4js 完全讲解 (juejin.cn)](https://juejin.cn/post/6844903442054381582)
 
-​	mongodb基本操作见：https://github.com/xs-web-lhdd/jingdong/tree/server里面README文件
+​	mongodb基本操作见：https://github.com/xs-web-lhdd/jingdong/tree/server  里面README文件
 
 
 
