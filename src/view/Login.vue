@@ -7,7 +7,7 @@
           <el-input type="text" prefix-icon="el-icon-user" v-model="user.userName"></el-input>
         </el-form-item>
         <el-form-item prop="userPwd">
-          <el-input type="password" prefix-icon="el-icon-view" v-model="user.userPwd"></el-input>
+          <el-input type="password" prefix-icon="el-icon-view" show-password v-model="user.userPwd"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" class="btn-login" @click="login">登录</el-button>

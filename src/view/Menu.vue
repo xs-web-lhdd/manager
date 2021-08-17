@@ -20,7 +20,7 @@
 
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleAdd(1)">创建</el-button>
+        <el-button type="primary" @click="handleAdd(1)">新增</el-button>
       </div>
       <el-table
         :data="menuList"
@@ -52,7 +52,7 @@
     </div>
 
 
-    <el-dialog title="菜单新增" v-model="showModal" @close="handleClose">
+    <el-dialog :title="action === 'add' ? '新增菜单' : '编辑菜单'" v-model="showModal" @close="handleClose">
       <el-form ref="dialogForm" :model="menuForm" :rules="rules" label-width="100px">
         <el-form-item label="父级菜单" prop="parentId">
           <el-cascader
@@ -143,7 +143,7 @@ const columns = ref([
 const rules = reactive({
   menuName: [
     { required: true, message: '请输入菜单名称', trigger: 'blur' },
-    { min: 2, max: 10, message: '长度在2-8个字符', trigger: 'blur' }
+    { min: 2, max: 8, message: '长度在2-8个字符', trigger: 'blur' }
   ]
 })
 const menuForm = reactive({
@@ -199,7 +199,6 @@ export default {
     const handleSubmit = () => {
       proxy.$refs.dialogForm.validate(async (valid) => {
         if (valid) {
-          let { menuForm } = proxy
           const active = action.value
           let params = { ...menuForm, active } 
           const res = await proxy.$api.menuSubmit(params)
@@ -228,7 +227,7 @@ export default {
         console.log(error);
       }
     }
-    return { queryForm, menuList, columns, showModal, menuForm, rules,
+    return { queryForm, menuList, columns, showModal, menuForm, rules, action,
     handleQuery, handleReset, handleAdd, handleSubmit, handleClose,
     handleEdit, handleDel
     }

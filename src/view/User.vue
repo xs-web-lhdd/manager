@@ -66,7 +66,7 @@
     </div>
 
 
-    <el-dialog title="用户新增" v-model="showModal" @close="handleClose" >
+    <el-dialog :title="active === 'edit'? '用户编辑' : '用户新增'" v-model="showModal" @close="handleClose" >
       <el-form ref="dialogForm" :model="userForm" :rules="rules" label-width="100px">
         <el-form-item label="用户名" prop="userName">
           <el-input v-model="userForm.userName" :disabled="active === 'edit'" placeholder="请输入用户名称"/>

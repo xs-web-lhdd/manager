@@ -390,6 +390,26 @@ transition:  margin-left .5s;
 
 ​		官方文档：[组件 | Element (element-plus.org)](https://element-plus.org/#/zh-CN/component/form)
 
+###### 表单重置：
+
+结构：
+
+```vue
+          <el-button @click="() => handleReset('ruleForm')">重置</el-button>
+```
+
+事件：
+
+```js
+// 接受的参数是dom上绑的ref对象
+const handleReset = (form) => { 
+     ctx.$refs[form].resetFields()
+}
+// .resetFields()是ElementPlus自带的方法
+```
+
+在重置的时候记得加prop
+
 ##### 2、下拉框使用：
 
 el-dropdown有command事件
@@ -472,7 +492,192 @@ this.$route.matched是路由的数组，能拿到路由相关的信息，然后�
 
 ​	侧边栏：官方文档：[组件 | Element (element-plus.org)](https://element-plus.org/#/zh-CN/component/menu)
 
+##### 5、表格：
 
+```vue
+      <el-table
+        :data="userList"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55"/>
+        <el-table-column
+          v-for="item in columns"
+          :key="item.prop"
+          :prop="item.prop"
+          :label="item.label"
+          :width="item.width"
+          :formatter="item.formatter"
+          align="center"
+        >
+        </el-table-column>
+        <el-table-column
+          fixed="right"
+          label="操作"
+          width="150"
+          align="center"
+        >
+          <template #default="scope">
+            <el-button @click="handleEdit(scope.row)" size="mini" v-has="'user-edit'">编辑</el-button>
+            <el-button type="danger" size="mini" @click="() => handleDel(scope.row)" v-has="'user-delete'">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+```
 
+​	在操作时需要用到插槽放按钮，通过```:data="userList"```循环遍历出从后端拿到的数据，遍历出表格每一列	
 
+​	在Vue中想要获取到全局挂载的对象（好比vue2中的this），需要用到getCurrentInstance
 
+官方文档：[组合式 API | Vue.js (vuejs.org)](https://v3.cn.vuejs.org/api/composition-api.html#getcurrentinstance)
+
+```js
+// 引入
+import { getCurrentInstance } from 'vue'
+// 实例化调用
+const { proxy } = getCurrentInstance()
+// 使用
+proxy.$api.getUserList(params) // 调用全局挂载的api发送请求
+```
+
+###### 消息提示：
+
+```js
+proxy.$message.success('删除成功')
+```
+
+也可通过全局的proxy进行使用
+
+###### 全选：
+
+```js
+// 在el-table上面绑定
+@selection-change="handleSelectionChange"
+// 执行事件    
+const handleSelectionChange = (list) => {
+    // list里面有所有选中的行的所有信息，可以根据里面的信息执行一系列操作
+}
+```
+
+###### 格式化：
+
+```js
+// 在el-table-column绑定
+:formatter="item.formatter"
+// 在el-table-column中循环的数组中定义formatter
+  { 
+    label: '用户角色',
+    prop: 'role',
+    formatter(row, column, value) {  //格式化 --- 根据不同的数值转换为不同的名称
+      return {
+        0: '管理员',
+        1: '普通用户'
+      }[value]
+    } 
+  }
+```
+
+##### 7、分页：
+
+```vue
+      <el-pagination
+        class="pagination"
+        background
+        layout="prev, pager, next"
+        :total="pager.total"
+        :page-size="pager.pageSize"
+        @current-change="handleCurrentChange"
+      >
+      </el-pagination>
+```
+
+​	@current-change="handleCurrentChange"是点击换页时的事件
+
+```js
+    const handleCurrentChange = (current) => {
+      // current是当前第几页码
+      pager.pageNum = current
+      getUserList()
+    }
+```
+
+​	官网地址： [组件 | Element (gitee.io)](https://element-plus.gitee.io/#/zh-CN/component/pagination)
+
+#####  8、级联选择器：
+
+```vue
+          <el-cascader
+            v-model="userForm.deptId"
+            placeholder="请选择所属部门"
+            :options="deptList"
+            :props="{ checkStrictly: true, value: '_id', label: 'deptName' }"
+            clearable
+            style="width: 100%"
+          >
+          </el-cascader>
+```
+
+​	注意一个细节：```:props="{ checkStrictly: true, value: '_id', label: 'deptName' }"```可以自定义value和label，做到一个映射关系，value对应_id，label对应deptName
+​	官网地址：[组件 | Element (gitee.io)](https://element-plus.gitee.io/#/zh-CN/component/cascader)
+
+#### 用户管理：
+
+​	细节点：当点击编辑时表单弹出来，并将那一行表格里面的数据赋值到表单上面去，但是不能直接赋值，赋值的时候可以用一个一个赋值，也可以直接对对象进行赋值（用assign做一个浅拷贝），但有一个细节点是不能直接赋值，如果直接赋值那么在取消表单或者确定表单时表单重置就不起作用了，即再次点开新增的时候表单里面默认就有值，这样不是我们想要的，因此需要这样写：
+
+```js
+      proxy.$nextTick(() => {
+        Object.assign(userForm, row)
+      })
+```
+
+​	nextTick()作用是在dom渲染完成后再去执行代码，这样表单的初始状态就是一个空，这样点击取消或者确定后重置就会成初始状态，因为初始状态是一个空，所以再次点击新增的时候表单就是空的。
+
+​	提到上面浅拷贝就忍不住提一下深拷贝，有一个简单的方式可以实现深拷贝：
+
+```js
+JSON.parse(JSON.stringify(menuList)) // 很方便快捷
+```
+
+​	官网解释：[全局 API | Vue.js (vuejs.org)](https://v3.cn.vuejs.org/api/global-api.html#nexttick)  [实例方法 | Vue.js (vuejs.org)](https://v3.cn.vuejs.org/api/instance-methods.html#nexttick)
+
+##### 时间格式化：
+
+对服务端返回的时间戳进行进一步处理：
+
+```js
+// 格式化之前的时间戳 2021-08-14T07:35:54.850+00:00  
+  formateTime(value, stdValue) { // 格式化时间戳的简单方式（根据数据库返回的时间戳模型进行格式化） 2021-08-14T07:35:54.850+00:00
+    return value.split('.')[0].split('T')[0] + ' ' + stdValue.toString().split(' ')[4]
+  }
+// 上面接收两个参数，第一个参数是世界时间（Date.now()） 第二个参数是中国标准时间(new Date())，这点细节需要注意！！！
+// 格式化之后 2021-08-14 07:35:54
+```
+
+对比代码中的要简单了许多！！！嘿嘿嘿
+
+#### 菜单管理：
+
+##### 菜单新增：
+
+​	在菜单管理页面新增时要接收两个参数，第一个参数是判断是那个新增（最上面的新增，还是表格右边的新增），如果是最上边的新增，那么在点开表单后父级菜单要为空，如果是右边菜单那么点开后父级菜单里面要含有当前菜单的名称:
+
+​	上边新增：
+
+![](C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manager-fe\src\assets\images\MenuAddTop.png)
+
+​	
+
+​	右边新增：
+
+![](C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manager-fe\src\assets\images\MenuAddRight.png)
+
+那么如果是右边的新增就要将父菜单和自身的名字赋值上去：
+
+```js
+if (type === 2) {
+  menuForm.parentId = [...row.parentId, row._id].filter(item => item)
+}
+```
+
+因为在模板上双向绑定的是menuForm.parentId，所以改变menuForm.parentId就可以了，因为parentdId是一个数组，所以改变后也需要是一个数组，用filter过滤一下是因为担心因为```...row.parentId```是空而导致数组里面有空，从而自己菜单名称不显示（menuForm.parentId是一个数组，里面都是菜单对应的\_id，在模板中\_id对应value，menuName对应label，这样双向绑定的\_id就会显示菜单名称（包括父菜单名称和自身菜单名称））
+
+​	还有一个细节就是一定是父菜单的\_id在数组前边，自身菜单\_id在后边，这样在数据库中存储符合菜单间的层级关系

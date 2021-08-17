@@ -24,5 +24,11 @@ export default {
         }
     }
     return fmt;
+  },
+  formateTime(value, stdValue) { // 格式化时间戳的简单方式（根据数据库返回的时间戳模型进行格式化） 2021-08-14T07:35:54.850+00:00
+    return value.split('.')[0].split('T')[0] + ' ' + stdValue.toString().split(' ')[4]
+  },
+  formate(value) { // 格式化时间戳的简单方式（根据数据库返回的时间戳模型进行格式化） 2021-08-14T07:35:54.850+00:00
+    return value.split('.')[0].split('T')[0] + ' ' + value.split('.')[0].split('T')[1]
   }
 }
