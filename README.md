@@ -400,3 +400,96 @@ app.use(koajwt({ secret: 'imooc' }).unless({ // 密钥必须与jwt加密时密�
 ```
 
 指定res中有userId userName userEmail state role deptId roleList这些字段
+
+#### 用户列表接口实现：
+
+```js
+router.get('/list', async (ctx, next) => {
+  // get是query传参 --- 细节！！！
+  const { userId, userName, state } = ctx.request.query
+  const { page, skipIndex } = utils.pager(ctx.request.query)
+  // 为去数据库查数据做铺垫，如果有userId userName那就说明前端调接口时传参了，就是点击查询按钮了，这时取数据库根据参数进行相应的查询，如果state有而且不是0，那么也说明进行查询了，state是0的时候就说明是查询所有，默认就是所有，那么就不需要将state作为查询条件，因为不传数据库默认就会将所有状态查询出来。如果userId userName state && state != '0'三个条件都不成立，那就说明前端根本没有进行查询只是正常的调列表接口，那么就把前端所需的数据返回即可，这样的写法很妙，就不需要再写一个新的接口去进行查询了
+  let params = {}
+  if (userId) params.userId = userId
+  if (userName) params.userName = userName
+  if (state && state != '0') params.state = state
+  try {
+    // 根据params进行查询：过滤掉密码
+    const query = User.find(params, {_id: 0, userPwd: 0}) // 查询出所有满足条件的数据
+    // 按照前端的页码要求返回相应的数据即可
+    const list = await query.skip(skipIndex).limit(page.pageSize)
+    const total = await User.countDocuments(params)
+  // 有参数了就根据参数查询，没有参数那就直接查询所有然后根据分页数据进行返回就完事了，总之一个接口干两份活，很秒！！！
+    ctx.body = utils.success({
+      page: {
+        ...page,
+        total
+      },
+      list
+    })  
+  } catch (error) {
+    ctx.body = utils.fail(`数据库查询异常：${error.stack}`)
+  }
+})
+```
+
+用户批量删除：
+
+前端传过来一个数组里面包含用户Id，因为是软删除，所以用update，用$in这种方式进行查询，查询到的改变一下状态就可以了
+
+```js
+const res = await User.updateMany({ userId: { $in: userId } }, { state: 2 })
+```
+
+###### mongodb手动实现自增长：
+
+思路：在mongodb里面手动建一个表，让里面的值每次进行自增长即可
+
+```js
+const doc = await Counter.findOneAndUpdate({ _id: 'userId' }, { $inc: { sequence_value: 1 } }, { new: true })
+```
+
+​	这行代码的意思是去Counter里面查找_id为userId的数据，然后让数据里面的sequence_value的值加一，并返回一个新的文档。
+
+###### 新增的核心代码：
+
+```js
+    if (!userName || !userEmail || !deptId) {
+      ctx.body = utils.fail('参数错误', utils.CODE.PARAM_ERROR)
+      return
+    }
+    const res = await User.findOne({ $or: [ { userName }, { userEmail } ] }, '_id userName userEmail')
+    if (res) {
+      ctx.body = utils.fail(`系统检测到有重复的用户，信息如下：${res.userName}---${res.userEmail}`)
+      return
+    }
+    const doc = await Counter.findOneAndUpdate({ _id: 'userId' }, { $inc: { sequence_value: 1 } }, { new: true })
+    try {
+      const user = new User({
+        userId: doc.sequence_value,
+        userPwd: md5('123456'),
+        userName, userEmail, role: 1, // 默认普通用户
+        roleList, job, state, deptId, mobile
+      })
+      user.save()
+      ctx.body = utils.success({}, '创建成功')      
+    } catch (error) {
+      ctx.body = utils.fail(error.stack ,'用户创建失败')
+    }
+```
+
+#### 菜单管理：
+
+###### 删除菜单：
+
+​		在删除父菜单的时候也要删除子菜单的数据，要不然菜单就会删除的不干净，导致数据冗余
+
+```js
+// 删除自身数据
+res = await Menu.findByIdAndDelete(_id)
+// 删除自身相关的子数据
+await Menu.deleteMany({ parentId: { $all: [ _id ]} })
+```
+
+这里用到了 $all 这个语法，只要一个元素的parentId包含要删除元素的\_id，那么也将此条元素删掉
+
