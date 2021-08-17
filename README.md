@@ -257,6 +257,30 @@ module.exports = mongoose
 
 #### 登录：
 
+本项目用jwt进行登录验证
+
+###### jwt解决问题：
+
+​		1、数据传输简单、高效
+
+​		2、jwt会生成签名，保证传输安全
+
+​		3、jwt具有时效性
+
+​		4、jwt更高效利用集群做好单点登录
+
+###### 原理：
+
+​		服务器认证后，生成一个JSON对象，后续通过JSON进行通信
+
+###### 使用方式：
+
+​		1、/api?token=xxx
+
+​		2、cookie写入token
+
+​		3、storage写入token，请求头添加：Authorization: Bearer \<token>
+
 通过jwt进行签名：
 
 ```js
@@ -298,11 +322,81 @@ const token = jwt.sign({
     data: data
 }, 'imooc', { expiresIn: '1h' })
 // 第一个参数是进行签名的数据，第二个参数是密钥，第三个参数是token过期时间
+data.token = token
+ctx.body = utils.success(data)
 ```
 
-​	jwt官网：[jsonwebtoken - npm (npmjs.com)](https://www.npmjs.com/package/jsonwebtoken)
+​	jwt插件官网：[jsonwebtoken - npm (npmjs.com)](https://www.npmjs.com/package/jsonwebtoken)
 
 ###### jwt与session那些事：
 
 session做不到单点登录而jwt可以，jwt与session可参考以下文章：https://juejin.cn/post/6844904034181070861   https://juejin.cn/post/6844904115080790023   https://juejin.cn/post/6898630134530752520
 
+###### token拦截：
+
+需要先安装一个中间件：
+
+```js
+yarn add koa-jwt -S
+```
+
+koa-jwt是一个中间件，必须在启动的入口时加载它
+
+```js
+// 引入
+const koajwt = require('koa-jwt')
+// 使用
+app.use(koajwt({ secret: 'imooc' }).unless({ // 密钥必须与jwt加密时密钥一致
+  path: [/^\/api\/users\/login/]
+})) // 要保证在登陆时不进行校验，要不然登录时也校验那根本登录不进去，在这里用unless来排除不需要jwt校验的
+```
+
+在加载任何之前都需要先被koajwt校验一下，底层原理还是基于jwt，如果token不正确那么koa-jwt拦截完状态码是401，这时在服务端就可以进行判断了：
+
+```js
+  await next().catch((err) => {
+    if (err.status == '401') {
+      ctx.status = 200;
+      ctx.body = util.fail('Token认证失败', util.CODE.AUTH_ERROR) // 500001
+    } else {
+      throw err;
+    }
+  })
+```
+
+​	知道状态码是401时就是token认证失败，手动将状态码改为200，给前端显示请求成功，防止前端报错，然后将错误信息返回给前端，如果不是401说明是其他错误（与token拦截无关），这时将错误抛出即可。
+
+​	util.CODE.AUTH_ERROR是500001，这时前端的响应拦截就去起作用，判断出是token认证过期了，然后就会跳转，前端响应拦截代码：
+
+```js
+ service.interceptors.response.use((res) => {
+     const { code, data, msg } = res.data;
+     if (code === 200) {
+         return data;
+     } else if (code === 500001) { // 判断出相应的code码是500001，就会在前端提示出错误，然后1.5秒后跳到登录界面
+         ElMessage.error(TOKEN_INVALID)
+         setTimeout(() => {
+             router.push('/login')
+         }, 1500)
+         return Promise.reject(TOKEN_INVALID)
+     } else {
+         ElMessage.error(msg || NETWORK_ERROR)
+         return Promise.reject(msg || NETWORK_ERROR)
+     }
+ })
+```
+
+在这里还有一个知识点就是指定数据库返回那些字段：
+
+```js
+    // 返回数据库指定字段有三种方式
+    // 1、通过字符串空格的方式 ： 'userId userName userEmail state role deptId roleList'
+    // 2、通过JSON的方式 1代表返回，0代表不返回：  { userId:1, userName:0 }
+    // 3、通过select('userId')：打点调用select('userId')
+    const res = await User.findOne({
+      userName,
+      userPwd: md5(userPwd)
+    }, 'userId userName userEmail state role deptId roleList')
+```
+
+指定res中有userId userName userEmail state role deptId roleList这些字段
