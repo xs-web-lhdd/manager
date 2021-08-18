@@ -114,7 +114,7 @@ export default {
       url: '/users/all/list',
       method: 'get',
       data: params,
-      mock: true
+      // mock: true
     })
   },
   deptOperate(params) {

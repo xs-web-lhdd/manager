@@ -188,7 +188,8 @@ export default {
     }
     // 查询所有用户
     const getUserList = async () => {
-      const { list } = await proxy.$api.getUserList()
+      // const { list } = await proxy.$api.getUserList()
+      const list = await proxy.$api.getAllUserList()
       console.log(list);
       userList.value = list
     }
