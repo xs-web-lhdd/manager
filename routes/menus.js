@@ -48,6 +48,10 @@ router.get('/list', async (ctx, next) => {
     params.menuState = menuState
   }
   const rootList = await Menu.find(params) || []
+  if (menuName || menuState==2) {
+    ctx.body = util.success(rootList)
+    return
+  }
   const primissionList = util.getTreeMenu(rootList, null, [])
   ctx.body = util.success(primissionList)
 })
