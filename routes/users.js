@@ -41,6 +41,11 @@ router.post('/login', async (ctx, next) => {
   }
 })
 
+// 全部用户列表
+router.get('/all/list', async(ctx, next) => {
+  const list = await User.find({ state: 1 })
+  ctx.body = utils.success(list)
+})
 
 // 用户列表：
 router.get('/list', async (ctx, next) => {
