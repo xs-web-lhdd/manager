@@ -14,7 +14,7 @@
 
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleCreate">创建</el-button>
+        <el-button type="primary" @click="handleCreate" v-has="'role-add'">创建</el-button>
       </div>
       <el-table
         :data="roleList"
@@ -36,9 +36,9 @@
           align="center"
         >
           <template #default="scope">
-            <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="handleOpenPermission(scope.row)">设置权限</el-button>
-            <el-button type="danger" size="mini" @click="() => handleDel(scope.row._id)">删除</el-button>
+            <el-button size="mini" @click="handleEdit(scope.row)" v-has="'role-edit'">编辑</el-button>
+            <el-button size="mini" type="primary" @click="handleOpenPermission(scope.row)" v-has="'role-setting'">设置权限</el-button>
+            <el-button type="danger" size="mini" @click="() => handleDel(scope.row._id)" v-has="'role-delete'">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

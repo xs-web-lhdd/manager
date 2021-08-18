@@ -20,7 +20,7 @@
 
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleAdd(1)">新增</el-button>
+        <el-button type="primary" @click="handleAdd(1)" v-has="'menu-add'">新增</el-button>
       </div>
       <el-table
         :data="menuList"
@@ -43,9 +43,9 @@
           align="center"
         >
           <template #default="scope">
-            <el-button @click="handleAdd(2, scope.row)" type="primary" size="mini">新增</el-button>
-            <el-button @click="handleEdit(scope.row)" size="mini">编辑</el-button>
-            <el-button type="danger" size="mini" @click="() => handleDel(scope.row._id)">删除</el-button>
+            <el-button @click="handleAdd(2, scope.row)" type="primary" size="mini" v-has="'menu-add'">新增</el-button>
+            <el-button @click="handleEdit(scope.row)" size="mini" v-has="'menu-edit'">编辑</el-button>
+            <el-button type="danger" size="mini" @click="() => handleDel(scope.row._id)" v-has="'menu-delete'">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

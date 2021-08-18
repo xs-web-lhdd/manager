@@ -13,7 +13,7 @@
     </div>
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleCreate">创建</el-button>
+        <el-button type="primary" @click="handleCreate" v-has="'dept-create'">创建</el-button>
       </div>
       <el-table :data="deptList" row-key="_id">
         <el-table-column
@@ -33,8 +33,8 @@
           align="center"
         >
           <template #default="scope">
-            <el-button type="primary" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="mini" @click="handleDel(scope.row._id)">删除</el-button>
+            <el-button type="primary" size="mini" @click="handleEdit(scope.row)" v-has="'dept-edit'">编辑</el-button>
+            <el-button type="danger" size="mini" @click="handleDel(scope.row._id)" v-has="'dept-delete'">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

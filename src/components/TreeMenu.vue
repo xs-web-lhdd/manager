@@ -7,7 +7,7 @@
           </template>
           <TreeMenu :userMenu="menu.children"/>
         </el-submenu>
-        <el-menu-item v-else-if="menu.menuType == 1" :index="menu.path">{{menu.menuName}}</el-menu-item>
+        <el-menu-item v-else-if="menu.menuType == 1 && menu.menuState == 1" :index="menu.path">{{menu.menuName}}</el-menu-item>
   </template>
 </template>
 
