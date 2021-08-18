@@ -189,6 +189,7 @@ export default {
     // 查询所有用户
     const getUserList = async () => {
       const { list } = await proxy.$api.getUserList()
+      console.log(list);
       userList.value = list
     }
     // 根据选择不同用户显示不同邮箱

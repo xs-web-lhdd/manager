@@ -681,3 +681,41 @@ if (type === 2) {
 因为在模板上双向绑定的是menuForm.parentId，所以改变menuForm.parentId就可以了，因为parentdId是一个数组，所以改变后也需要是一个数组，用filter过滤一下是因为担心因为```...row.parentId```是空而导致数组里面有空，从而自己菜单名称不显示（menuForm.parentId是一个数组，里面都是菜单对应的\_id，在模板中\_id对应value，menuName对应label，这样双向绑定的\_id就会显示菜单名称（包括父菜单名称和自身菜单名称））
 
 ​	还有一个细节就是一定是父菜单的\_id在数组前边，自身菜单\_id在后边，这样在数据库中存储符合菜单间的层级关系
+
+#### 权限管理：
+
+在提交的时候将选中的树形权限提交到服务端
+
+![](C:\Users\LiuHao\Desktop\待开发项目\vue3+ele+koa+mon后台管理系统\manager-fe\src\assets\images\权限设置.jpeg)
+
+```js
+  // 确定提交
+  const handlePermissionSubmit = async () => {
+    let nodes = proxy.$refs.permissionTree.getCheckedNodes() // 全选中的按钮在这个数组中（里面有菜单也有按钮）
+    let halfKeys = proxy.$refs.permissionTree.getHalfCheckedNodes() // 半选中的按钮在这个数组中（只有菜单，因为按钮不存在半选中的）
+    let checkedKeys = [] // 存放选中按钮的数组
+    let parentKeys = [] // 存放选中菜单的数组
+    nodes.map((node) => {
+      if (!node.children){ // 没有children说明是按钮，就放到checkedKeys这个数组中
+        checkedKeys.push(node._id)
+      } else {
+        parentKeys.push(node._id)
+      }
+    })
+    let params = {
+      _id: curRoleId.value,
+      permissionList: {
+        checkedKeys, // 里面全是按钮
+        halfCheckedKeys: parentKeys.concat(halfKeys) // 把菜单放在一个数组里面，里面全是菜单
+      }
+    }
+    const res = await proxy.$api.updatePermission(params)
+    if (res) {
+      showPermission.value = false
+      proxy.$message.success('设置成功')
+      getRoleAllList()
+    }
+  }
+```
+
+在上面代码中```getCheckedNodes()```和```·getHalfCheckedNodes()```都是Element-Plus树形结构中自带的方法，作用分别是获取到选中的按钮（对号），和半选中的按钮（一个像一的标识），```proxy.$refs.permissionTree.getCheckedNodes()```得到的是一个数组，里面全是完全选中的按钮，但里面包括按钮和菜单（为什么有菜单？当菜单下面的按钮全部被选中时该菜单就会显示完全被选中），```proxy.$refs.permissionTree.getHalfCheckedNodes()```这个里面全是半选中的菜单（为什么只有菜单没有按钮？因为按钮下面没有子选项，因此按钮要么不选要么选中，不存在半选中这一说），然后对```proxy.$refs.permissionTree.getCheckedNodes()```里面的东西进行筛选，如果没有children那就说明是按钮（因为按钮没有子选项），这样把按钮全部存到```checkedKeys```里面，```parentKeys.concat(halfKeys)```里面全是菜单（有全选的菜单，也有半选中的菜单）

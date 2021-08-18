@@ -14,7 +14,7 @@
 
     <div class="base-table">
       <div class="action">
-        <el-button type="primary" @click="handleCreate" v-has="'role-add'">创建</el-button>
+        <el-button type="primary" @click="handleCreate" v-has="'role-create'">创建</el-button>
       </div>
       <el-table
         :data="roleList"
@@ -240,18 +240,22 @@ const usePermissionEffect = (proxy, getRoleAllList) => {
     curRoleName.value = row.roleName
     showPermission.value = true
     const { checkedKeys } = row.permissionList
-    setTimeout(() => {
+    // 在点开设置权限时会自动勾选上已有权限，可以用定时器，也可以用nextTick，两者都是需要等待DOM加载完成之后再进行操作
+    // setTimeout(() => {
+      // proxy.$refs.permissionTree.setCheckedKeys(checkedKeys)
+    // }, 1) 
+    proxy.$nextTick(() => {
       proxy.$refs.permissionTree.setCheckedKeys(checkedKeys)
-    }, 1) 
+    })
   }
   // 确定提交
   const handlePermissionSubmit = async () => {
-    let nodes = proxy.$refs.permissionTree.getCheckedNodes()
-    let halfKeys = proxy.$refs.permissionTree.getHalfCheckedNodes()
-    let checkedKeys = []
-    let parentKeys = []
+    let nodes = proxy.$refs.permissionTree.getCheckedNodes() // 全选中的按钮在这个数组中（里面有菜单也有按钮）
+    let halfKeys = proxy.$refs.permissionTree.getHalfCheckedNodes() // 半选中的按钮在这个数组中（只有菜单，因为按钮不存在半选中的）
+    let checkedKeys = [] // 存放选中按钮的数组
+    let parentKeys = [] // 存放选中菜单的数组
     nodes.map((node) => {
-      if (!node.children){
+      if (!node.children){ // 没有children说明是按钮，就放到checkedKeys这个数组中
         checkedKeys.push(node._id)
       } else {
         parentKeys.push(node._id)
@@ -260,8 +264,8 @@ const usePermissionEffect = (proxy, getRoleAllList) => {
     let params = {
       _id: curRoleId.value,
       permissionList: {
-        checkedKeys,
-        halfCheckedKeys: parentKeys.concat(halfKeys)
+        checkedKeys, // 里面全是按钮
+        halfCheckedKeys: parentKeys.concat(halfKeys) // 把菜单放在一个数组里面，里面全是菜单
       }
     }
     const res = await proxy.$api.updatePermission(params)
