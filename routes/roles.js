@@ -47,6 +47,12 @@ router.post('/operate', async (ctx, next) => {
   let res, info
   try {
     if (action === 'create') {
+      // 判断数据库中是否存在
+      const isExist = await Role.findOne({ roleName }, 'roleName remark')
+      if (isExist) {
+        ctx.body = util.fail(`该角色已存在，详情：${isExist.roleName}---${isExist.remark}`)
+        return
+      }
       res = await Role.create({ roleName, remark })
       info = '创建成功'
     } else if (action === 'edit') {
