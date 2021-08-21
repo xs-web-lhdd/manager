@@ -93,9 +93,7 @@
 import { getCurrentInstance ,reactive, ref, onMounted } from 'vue'
 import utils from '../untils/utils'
 
-const queryForm = reactive({
-  deptName: ''
-})
+const queryForm = reactive({})
 const columns = ref([
   { label: '部门名称', prop: 'deptName', width: '120', align: 'left' },
   { label: '负责人', prop: 'userName', align: 'center' },
@@ -190,7 +188,6 @@ export default {
     const getUserList = async () => {
       // const { list } = await proxy.$api.getUserList()
       const list = await proxy.$api.getAllUserList()
-      console.log(list);
       userList.value = list
     }
     // 根据选择不同用户显示不同邮箱
