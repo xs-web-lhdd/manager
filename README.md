@@ -720,3 +720,16 @@ if (type === 2) {
 
 在上面代码中```getCheckedNodes()```和```·getHalfCheckedNodes()```都是Element-Plus树形结构中自带的方法，作用分别是获取到选中的按钮（对号），和半选中的按钮（一个像一的标识），```proxy.$refs.permissionTree.getCheckedNodes()```得到的是一个数组，里面全是完全选中的按钮，但里面包括按钮和菜单（为什么有菜单？当菜单下面的按钮全部被选中时该菜单就会显示完全被选中），```proxy.$refs.permissionTree.getHalfCheckedNodes()```这个里面全是半选中的菜单（为什么只有菜单没有按钮？因为按钮下面没有子选项，因此按钮要么不选要么选中，不存在半选中这一说），然后对```proxy.$refs.permissionTree.getCheckedNodes()```里面的东西进行筛选，如果没有children那就说明是按钮（因为按钮没有子选项），这样把按钮全部存到```checkedKeys```里面，```parentKeys.concat(halfKeys)```里面全是菜单（有全选的菜单，也有半选中的菜单）
 
+#### Vue3知识图谱：
+
+![](https://i.loli.net/2021/09/09/yUmC9l6LntkXMux.png)
+
+![](https://i.loli.net/2021/09/09/qCWhtTIipYXN4DG.png)
+
+![](https://i.loli.net/2021/09/09/PpDAsgaMlo7xcNy.png)
+
+![](https://i.loli.net/2021/09/09/IYygdVu3coRZzmq.png)
+
+![](https://i.loli.net/2021/09/09/TXt6lsRBdxquEmb.png)
+
+![](https://i.loli.net/2021/09/09/217ZJBkcmyDYWqw.png)
